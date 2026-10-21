@@ -1,0 +1,437 @@
+{
+  "lab_name": "lab01",
+  "metadata": {
+    "title": "BÁO CÁO BÀI THỰC HÀNH SỐ 1",
+    "subtitle": "PHÂN TÍCH MỘT SỐ KỸ THUẬT THĂM DÒ MẠNG",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab01.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "Yêu cầu kết quả thực hành:"
+    },
+    {
+      "type": "bullet",
+      "text": "Đóng gói các kết quả vào file nén có tên theo định dạng HoTenSV_MSSV_Lab01.zip"
+    },
+    {
+      "type": "bullet",
+      "text": "Báo cáo kết quả thực hành"
+    },
+    {
+      "type": "bullet",
+      "text": "File bắt lưu lượng trên các máy do thám của mỗi kịch bản. Kích thước mỗi file không quá 5MB."
+    },
+    {
+      "type": "heading_1",
+      "text": "KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "heading_2",
+      "text": "Phân tích một số kỹ thuật quét cổng ứng dụng của nmap"
+    },
+    {
+      "type": "heading_2",
+      "text": "Kịch bản 1"
+    },
+    {
+      "type": "paragraph",
+      "text": "Ảnh chụp kết quả thực hiện của nmap: 0.5 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh thực hiện (trên máy do thám Attack, địa chỉ 192.168.117.10):"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -sn 192.168.117.0/24"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image1_1_nmap_sn.png",
+      "caption": "Hình 1.1 – Kết quả lệnh sudo nmap -sn 192.168.117.0/24",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đặc điểm lưu lượng để cho thấy kỹ thuật quét thăm dò là gì? Lưu ý mỗi đặc điểm được chỉ ra phải có hình ảnh chụp màn hình để minh chứng: 1 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết luận: nmap đã sử dụng kỹ thuật ARP Ping Scan để phát hiện các nút mạng đang hoạt động (do máy do thám và các máy đích cùng một mạng LAN nên nmap dùng ARP thay cho ICMP/TCP)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 1 – Máy do thám gửi hàng loạt gói ARP Request quảng bá lần lượt cho từng địa chỉ IP trong dải 192.168.117.0/24. Địa chỉ đích ở tầng Ethernet là Broadcast (ff:ff:ff:ff:ff:ff), nội dung \"Who has 192.168.117.x? Tell 192.168.117.10\", x tăng dần từ 1 đến 254. Bộ lọc Wireshark: arp.opcode == 1"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image1_2_arp_req.png",
+      "caption": "Hình 1.2 – Các gói ARP Request quảng bá (bộ lọc arp.opcode == 1)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 2 – Chỉ các máy đang hoạt động mới gửi ARP Reply (cho biết địa chỉ MAC), các địa chỉ không có máy thì không có phản hồi (nmap gửi lại ARP Request thêm lần nữa rồi bỏ qua). Các địa chỉ IP trong ARP Reply trùng khớp với danh sách \"Host is up\" của nmap. Bộ lọc: arp.opcode == 2"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image1_3_arp_rep.png",
+      "caption": "Hình 1.3 – Các gói ARP Reply từ máy đang hoạt động (bộ lọc arp.opcode == 2)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 3 – Không có gói TCP/ICMP nào được gửi tới các máy (không quét cổng, không ping ICMP), chứng tỏ nmap chỉ thực hiện phát hiện host ở tầng liên kết dữ liệu bằng ARP. Bộ lọc: tcp || icmp (kết quả rỗng, hoặc chỉ là lưu lượng nền không liên quan tới nmap)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image1_4_no_tcp.png",
+      "caption": "Hình 1.4 – Không có gói TCP/ICMP nào (bộ lọc tcp || icmp)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "File lưu lượng: task1.pcap."
+    },
+    {
+      "type": "paragraph",
+      "text": "Nếu không phân tích đúng đặc điểm lưu lượng: 0 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đúng đặc điểm nhưng nêu sai tên kỹ thuật quét: 0.5 điểm"
+    },
+    {
+      "type": "heading_2",
+      "text": "Kịch bản 2"
+    },
+    {
+      "type": "paragraph",
+      "text": "Ảnh chụp kết quả thực hiện của nmap: 0.5 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh thực hiện (máy mục tiêu: 192.168.117.13):"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -sS -F 192.168.117.13"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image2_1_nmap_ss.png",
+      "caption": "Hình 2.1 – Kết quả lệnh sudo nmap -sS -F 192.168.117.13",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đặc điểm lưu lượng để cho thấy kỹ thuật quét thăm dò là gì? Lưu ý mỗi đặc điểm được chỉ ra phải có hình ảnh chụp màn hình để minh chứng: 1 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết luận: nmap đã sử dụng kỹ thuật TCP SYN Scan (còn gọi là half-open scan / stealth scan) với tùy chọn -F (quét 100 cổng phổ biến nhất)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 1 – Máy do thám gửi hàng loạt gói TCP chỉ bật cờ SYN (Flags: 0x002, window size 1024) tới rất nhiều cổng đích khác nhau của 192.168.117.13, trong khi cổng nguồn giữ nguyên. Bộ lọc: ip.src == 192.168.117.10 && tcp.flags.syn == 1 && tcp.flags.ack == 0"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image2_2_tcp_syn.png",
+      "caption": "Hình 2.2 – Loạt gói SYN tới nhiều cổng đích (bộ lọc tcp.flags.syn==1 && tcp.flags.ack==0)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 2 – Với cổng đang mở, máy mục tiêu trả lời SYN/ACK, nhưng máy do thám KHÔNG gửi ACK để hoàn tất bắt tay 3 bước mà gửi ngay gói RST. Kết nối không được thiết lập, không có dữ liệu trao đổi. Đây là điểm khác biệt với TCP Connect Scan (có đủ SYN – SYN/ACK – ACK rồi mới RST). Bộ lọc: tcp.port == 22 hoặc tcp.flags.syn == 1 && tcp.flags.ack == 1"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image2_3a_syn_ack.png",
+      "caption": "Hình 2.3a – Các gói SYN/ACK trả về từ cổng đang mở (bộ lọc tcp.flags.syn==1 && tcp.flags.ack==1)",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image2_3b_syn_rst.png",
+      "caption": "Hình 2.3b – Chuỗi SYN → SYN/ACK → RST trên cổng 22, không có gói ACK (bộ lọc tcp.port==22)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 3 – Với cổng đóng, máy mục tiêu trả lời RST/ACK ngay sau gói SYN. Danh sách cổng trả SYN/ACK trùng khớp với danh sách cổng open trong kết quả nmap. Bộ lọc: ip.src == 192.168.117.13 && tcp.flags.reset == 1"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image2_4_rst_ack.png",
+      "caption": "Hình 2.4 – Các gói RST/ACK trả về từ cổng đóng (bộ lọc tcp.flags.reset==1)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "File lưu lượng: task2.pcap."
+    },
+    {
+      "type": "paragraph",
+      "text": "Nếu không phân tích đúng đặc điểm lưu lượng: 0 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đúng đặc điểm nhưng nêu sai tên kỹ thuật quét: 0.5 điểm"
+    },
+    {
+      "type": "heading_2",
+      "text": "Kịch bản 3"
+    },
+    {
+      "type": "paragraph",
+      "text": "Ảnh chụp kết quả thực hiện của nmap: 0.5 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh thực hiện (máy mục tiêu: 192.168.117.13):"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -sA -F 192.168.117.13"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image3_1_nmap_sa.png",
+      "caption": "Hình 3.1 – Kết quả lệnh sudo nmap -sA -F 192.168.117.13",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đặc điểm lưu lượng để cho thấy kỹ thuật quét thăm dò là gì? Lưu ý mỗi đặc điểm được chỉ ra phải có hình ảnh chụp màn hình để minh chứng: 1 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết luận: nmap đã sử dụng kỹ thuật TCP ACK Scan – kỹ thuật dùng để phát hiện máy mục tiêu có được bảo vệ bởi firewall hay không (chỉ phân biệt filtered/unfiltered, không xác định cổng open/closed)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 1 – Máy do thám gửi hàng loạt gói TCP chỉ bật cờ ACK (Flags: 0x010) tới nhiều cổng đích khác nhau, mặc dù trước đó chưa hề có gói SYN hay kết nối nào được thiết lập. Bộ lọc: ip.src == 192.168.117.10 && tcp.flags == 0x010"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image3_2_ack_flags.png",
+      "caption": "Hình 3.2 – Loạt gói chỉ có cờ ACK (bộ lọc tcp.flags==0x010)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 2 – Máy mục tiêu trả lời bằng gói RST cho các cổng (kể cả cổng đang mở), không có gói SYN/ACK nào. Việc nhận được RST cho thấy gói ACK đã đi tới được máy đích mà không bị chặn → các cổng ở trạng thái unfiltered (khớp với kết quả nmap). Nếu có firewall chặn thì sẽ không có phản hồi (hoặc nhận ICMP unreachable) và nmap báo filtered. Bộ lọc: ip.src == 192.168.117.13 && tcp.flags.reset == 1"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image3_3_rst_reply.png",
+      "caption": "Hình 3.3 – Các gói RST trả lời gói ACK (bộ lọc tcp.flags.reset==1)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm 3 – Trong toàn bộ file lưu lượng không có gói SYN nào được gửi tới các cổng (khác với TCP SYN Scan và TCP Connect Scan). Bộ lọc: tcp.flags.syn == 1 (kết quả rỗng)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image3_4_no_syn.png",
+      "caption": "Hình 3.4 – Không có gói SYN nào (bộ lọc tcp.flags.syn==1)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "File lưu lượng: task3.pcap."
+    },
+    {
+      "type": "paragraph",
+      "text": "Nếu không phân tích đúng đặc điểm lưu lượng: 0 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích đúng đặc điểm nhưng nêu sai tên kỹ thuật quét: 0.5 điểm"
+    },
+    {
+      "type": "heading_1",
+      "text": "Thu thập thông tin hệ thống"
+    },
+    {
+      "type": "paragraph",
+      "text": "Hãy cho biết lệnh quét thăm dò tìm kiếm máy chủ email là gì? Giải thích các tham số sử dụng trong lệnh này?(1 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh quét tìm máy chủ email trong mạng 192.168.100.0/24:"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -p 25,110,143,465,587,993,995 --open 192.168.100.0/24"
+    },
+    {
+      "type": "paragraph",
+      "text": "Giải thích các tham số:"
+    },
+    {
+      "type": "bullet",
+      "text": "– sudo: chạy với quyền root để nmap dùng raw socket, nhờ đó thực hiện được ARP Ping (phát hiện host) và TCP SYN Scan (kiểu quét mặc định khi có quyền root)."
+    },
+    {
+      "type": "bullet",
+      "text": "– -p 25,110,143,465,587,993,995: chỉ quét các cổng của dịch vụ thư điện tử: 25 (SMTP), 465 (SMTPS), 587 (SMTP submission), 110 (POP3), 995 (POP3S), 143 (IMAP), 993 (IMAPS)."
+    },
+    {
+      "type": "bullet",
+      "text": "– --open: chỉ hiển thị các host có cổng ở trạng thái open, loại bỏ các cổng closed/filtered để dễ xác định máy chủ email."
+    },
+    {
+      "type": "bullet",
+      "text": "– 192.168.100.0/24: dải mạng cần quét (254 địa chỉ host, mặt nạ 255.255.255.0)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image4_1_mail_scan.png",
+      "caption": "Hình 4.1 – Kết quả tìm máy chủ email trong mạng 192.168.100.0/24",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả: máy chủ email có địa chỉ IP 192.168.100.20, các cổng mail đang mở: 25, 110, 143, 993, 995."
+    },
+    {
+      "type": "heading_2",
+      "text": "Thông tin hệ điều hành: (0.5 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Hình ảnh chụp kết quả của nmap: 0.25 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh thực hiện:"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -O 192.168.100.20"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image4_2_os_detect.png",
+      "caption": "Hình 4.2 – Kết quả lệnh sudo nmap -O 192.168.100.20",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Nêu tên và phiên bản hệ điều hành: 0.25 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Hệ điều hành của máy chủ email (theo kết quả nmap): Linux, nhân phiên bản 4.15 – 5.19 (Device type: general purpose; Running: Linux 4.X|5.X; OS CPE: cpe:/o:linux:linux_kernel:4, cpe:/o:linux:linux_kernel:5). Nmap chỉ ước lượng dải phiên bản nhân Linux, không xác định được chính xác bản phân phối."
+    },
+    {
+      "type": "heading_2",
+      "text": "Thông tin dịch vụ: 1 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Hình ảnh chụp kết quả của nmap: 0.25 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Lệnh thực hiện:"
+    },
+    {
+      "type": "code",
+      "text": "sudo nmap -sV 192.168.100.20"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image4_3_version_detect.png",
+      "caption": "Hình 4.3 – Kết quả lệnh sudo nmap -sV 192.168.100.20",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab01/image4_4_smtp_banner.png",
+      "caption": "Hình 4.4 – Wireshark (task4.pcap), bộ lọc smtp: banner SMTP của Postfix",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Danh sách dịch vụ: 0.75 điểm"
+    },
+    {
+      "type": "paragraph",
+      "text": "Các dịch vụ được cung cấp trên máy chủ email (bảng dưới). File lưu lượng: task4.pcap."
+    },
+    {
+      "type": "table",
+      "headers": [
+        "STT",
+        "Tên dịch vụ",
+        "Số hiệu cổng ứng dụng",
+        "Tên phần mềm và phiên bản"
+      ],
+      "rows": [
+        ["1", "SSH", "22", "OpenSSH 9.9p1 Ubuntu 3ubuntu3.2 (Ubuntu Linux; protocol 2.0)"],
+        ["2", "SMTP", "25", "Postfix smtpd (3.9.1)"],
+        ["3", "POP3", "110", "Dovecot pop3d (2.3.21.1)"],
+        ["4", "IMAP", "143", "Dovecot imapd (Ubuntu)"],
+        ["5", "IMAPS (IMAP qua SSL)", "993", "Dovecot imapd (Ubuntu)"],
+        ["6", "POP3S (POP3 qua SSL)", "995", "Dovecot pop3d"]
+      ]
+    },
+    {
+      "type": "heading_2",
+      "text": "Tìm kiếm thông tin về các lỗ hổng (3 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Báo cáo ngắn gọn về các lỗ hổng đã được công bố trên các phần mềm cung cấp dịch vụ."
+    },
+    {
+      "type": "paragraph",
+      "text": "Mỗi lỗ hổng: 1 điểm"
+    },
+    {
+      "type": "table",
+      "headers": [
+        "Phần mềm dịch vụ\n(tên dịch vụ, tên phần mềm, phiên bản)",
+        "Số CVE",
+        "Mô tả ngắn gọn về lỗ hổng (Tiếng Việt)"
+      ],
+      "rows": [
+        [
+          "SSH – OpenSSH 9.9p1 (Ubuntu 3ubuntu3.2)",
+          "CVE-2025-26466",
+          "Tấn công từ chối dịch vụ trước khi xác thực: kẻ tấn công gửi liên tục các gói SSH2_MSG_PING khiến máy chủ SSH tiêu tốn bộ nhớ và CPU không kiểm soát, dẫn tới quá tải hoặc ngừng dịch vụ. Ảnh hưởng OpenSSH 9.5p1 đến 9.9p1, đã sửa ở 9.9p2."
+        ],
+        [
+          "SSH – OpenSSH 9.9p1 (Ubuntu 3ubuntu3.2)",
+          "CVE-2025-26465",
+          "Lỗi logic trong ssh client khi bật tùy chọn VerifyHostKeyDNS (mặc định tắt) cho phép kẻ tấn công man-in-the-middle giả mạo máy chủ hợp lệ. Ảnh hưởng OpenSSH 6.8p1 đến 9.9p1, đã sửa ở 9.9p2."
+        ],
+        [
+          "SMTP – Postfix smtpd (3.9.1)",
+          "CVE-2023-51764",
+          "Lỗi \"SMTP smuggling\": Postfix chấp nhận chuỗi kết thúc dữ liệu <LF>.<CR><LF> mà một số máy chủ mail khác không chấp nhận, cho phép chèn thư giả mạo địa chỉ MAIL FROM và vượt qua kiểm tra SPF. Ảnh hưởng Postfix đến 3.8.5 khi chưa cấu hình giảm thiểu."
+        ],
+        [
+          "IMAP/POP3 – Dovecot imapd/pop3d (2.3.21.1)",
+          "CVE-2024-23184",
+          "Từ chối dịch vụ: thư có quá nhiều header địa chỉ làm Dovecot tiêu tốn CPU quá mức khi phân tích thư. Đã sửa ở Dovecot 2.3.21.1."
+        ],
+        [
+          "IMAP/POP3 – Dovecot imapd/pop3d (2.3.21.1)",
+          "CVE-2024-23185",
+          "Từ chối dịch vụ: header kích thước rất lớn làm Dovecot tiêu tốn bộ nhớ và CPU khi phân tích thư. Đã sửa ở Dovecot 2.3.21.1."
+        ]
+      ]
+    }
+  ]
+}
+

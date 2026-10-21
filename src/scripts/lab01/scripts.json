@@ -1,0 +1,108 @@
+{
+  "lab_name": "lab01",
+  "description": "Kịch bản tự động hóa thực nghiệm Lab 01 - Phân tích kỹ thuật thăm dò mạng và quét cổng Nmap",
+  "steps": [
+    {
+      "key": "check_network",
+      "name": "Kiểm tra cấu hình IP mạng máy do thám",
+      "command": "ip addr show eth0 || ifconfig eth0"
+    },
+    {
+      "key": "start_tcpdump_task1",
+      "name": "[Kịch bản 1] Bật tcpdump thu thập lưu lượng task1.pcap",
+      "command": "sudo tcpdump -i eth0 -n -w /tmp/task1.pcap arp or ip > /dev/null 2>&1 &"
+    },
+    {
+      "key": "run_nmap_sn",
+      "name": "[Kịch bản 1] Thực thi lệnh quét ARP Ping Scan nmap -sn",
+      "command": "sudo nmap -sn 192.168.117.0/24",
+      "sleep_after": 2
+    },
+    {
+      "key": "stop_tcpdump_task1",
+      "name": "[Kịch bản 1] Dừng tiến trình tcpdump cho task 1",
+      "command": "sudo pkill -f 'tcpdump.*task1.pcap' || true"
+    },
+    {
+      "key": "verify_task1_pcap",
+      "name": "[Kịch bản 1] Kiểm tra file lưu lượng task1.pcap",
+      "command": "ls -lh /tmp/task1.pcap && tcpdump -r /tmp/task1.pcap -c 10"
+    },
+    {
+      "key": "start_tcpdump_task2",
+      "name": "[Kịch bản 2] Bật tcpdump thu thập lưu lượng task2.pcap",
+      "command": "sudo tcpdump -i eth0 -n -w /tmp/task2.pcap tcp or arp > /dev/null 2>&1 &"
+    },
+    {
+      "key": "run_nmap_ss",
+      "name": "[Kịch bản 2] Thực thi lệnh TCP SYN Scan nmap -sS -F",
+      "command": "sudo nmap -sS -F 192.168.117.13",
+      "sleep_after": 2
+    },
+    {
+      "key": "stop_tcpdump_task2",
+      "name": "[Kịch bản 2] Dừng tiến trình tcpdump cho task 2",
+      "command": "sudo pkill -f 'tcpdump.*task2.pcap' || true"
+    },
+    {
+      "key": "verify_task2_pcap",
+      "name": "[Kịch bản 2] Kiểm tra file lưu lượng task2.pcap",
+      "command": "ls -lh /tmp/task2.pcap && tcpdump -r /tmp/task2.pcap 'tcp[tcpflags] & (tcp-syn) != 0' -c 5"
+    },
+    {
+      "key": "start_tcpdump_task3",
+      "name": "[Kịch bản 3] Bật tcpdump thu thập lưu lượng task3.pcap",
+      "command": "sudo tcpdump -i eth0 -n -w /tmp/task3.pcap tcp > /dev/null 2>&1 &"
+    },
+    {
+      "key": "run_nmap_sa",
+      "name": "[Kịch bản 3] Thực thi lệnh TCP ACK Scan nmap -sA -F",
+      "command": "sudo nmap -sA -F 192.168.117.13",
+      "sleep_after": 2
+    },
+    {
+      "key": "stop_tcpdump_task3",
+      "name": "[Kịch bản 3] Dừng tiến trình tcpdump cho task 3",
+      "command": "sudo pkill -f 'tcpdump.*task3.pcap' || true"
+    },
+    {
+      "key": "verify_task3_pcap",
+      "name": "[Kịch bản 3] Kiểm tra file lưu lượng task3.pcap",
+      "command": "ls -lh /tmp/task3.pcap && tcpdump -r /tmp/task3.pcap 'tcp[tcpflags] & (tcp-ack) != 0' -c 5"
+    },
+    {
+      "key": "start_tcpdump_task4",
+      "name": "[Kịch bản 4] Bật tcpdump thu thập lưu lượng task4.pcap",
+      "command": "sudo tcpdump -i eth0 -n -w /tmp/task4.pcap tcp or ip > /dev/null 2>&1 &"
+    },
+    {
+      "key": "run_nmap_find_mail",
+      "name": "[Kịch bản 4] Tìm kiếm máy chủ email trong mạng 192.168.100.0/24",
+      "command": "sudo nmap -p 25,110,143,465,587,993,995 --open 192.168.100.0/24",
+      "sleep_after": 2
+    },
+    {
+      "key": "run_nmap_os",
+      "name": "[Kịch bản 4] Nhận diện hệ điều hành máy chủ email (nmap -O)",
+      "command": "sudo nmap -O 192.168.100.20",
+      "sleep_after": 2
+    },
+    {
+      "key": "run_nmap_version",
+      "name": "[Kịch bản 4] Quét phiên bản dịch vụ máy chủ email (nmap -sV)",
+      "command": "sudo nmap -sV 192.168.100.20",
+      "sleep_after": 2
+    },
+    {
+      "key": "stop_tcpdump_task4",
+      "name": "[Kịch bản 4] Dừng tiến trình tcpdump cho task 4",
+      "command": "sudo pkill -f 'tcpdump.*task4.pcap' || true"
+    },
+    {
+      "key": "verify_all_pcaps",
+      "name": "Kiểm tra kích thước tất cả các file PCAP đã thu thập",
+      "command": "ls -lh /tmp/task*.pcap"
+    }
+  ]
+}
+

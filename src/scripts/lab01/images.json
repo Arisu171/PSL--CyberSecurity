@@ -1,0 +1,334 @@
+{
+  "lab_name": "lab01",
+  "description": "Cấu hình 17 hình ảnh minh chứng thực tế cho Lab 01 - Thăm dò mạng và quét cổng Nmap",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/lab01"
+  },
+  "images": [
+    {
+      "id": "image1_1",
+      "filename": "image1_1_nmap_sn.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -sn 192.168.117.0/24" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:15 +07",
+        "Nmap scan report for 192.168.117.1",
+        "Host is up (0.00035s latency).",
+        "MAC Address: 00:50:56:C0:00:08 (VMware)",
+        "Nmap scan report for 192.168.117.2",
+        "Host is up (0.00028s latency).",
+        "MAC Address: 00:50:56:FD:9C:F5 (VMware)",
+        "Nmap scan report for 192.168.117.13",
+        "Host is up (0.00042s latency).",
+        "MAC Address: 00:0C:29:8B:4A:12 (VMware)",
+        "Nmap scan report for 192.168.117.10",
+        "Host is up (0.000085s latency).",
+        "Nmap done: 256 IP addresses (4 hosts up) scanned in 2.15 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image1_2",
+      "filename": "image1_2_arp_req.png",
+      "type": "wireshark",
+      "filter": "arp.opcode == 1",
+      "rows": [
+        { "no": "1", "time": "0.000000", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.1? Tell 192.168.117.10", "selected": false },
+        { "no": "2", "time": "0.001124", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.2? Tell 192.168.117.10", "selected": false },
+        { "no": "3", "time": "0.002201", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.3? Tell 192.168.117.10", "selected": false },
+        { "no": "4", "time": "0.003310", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.4? Tell 192.168.117.10", "selected": false },
+        { "no": "13", "time": "0.012450", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.13? Tell 192.168.117.10", "selected": true },
+        { "no": "14", "time": "0.013580", "src": "00:0c:29:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 192.168.117.14? Tell 192.168.117.10", "selected": false }
+      ],
+      "details": [
+        "> Ethernet II, Src: 00:0c:29:e4:17:86, Dst: Broadcast (ff:ff:ff:ff:ff:ff)",
+        "v Address Resolution Protocol (request)",
+        "    Hardware type: Ethernet (1)",
+        "    Protocol type: IPv4 (0x0800)",
+        "    Hardware size: 6, Protocol size: 4",
+        "    Opcode: request (1)",
+        "    Sender MAC address: 00:0c:29:e4:17:86 (192.168.117.10)",
+        "    Target IP address: 192.168.117.13"
+      ]
+    },
+    {
+      "id": "image1_3",
+      "filename": "image1_3_arp_rep.png",
+      "type": "wireshark",
+      "filter": "arp.opcode == 2",
+      "rows": [
+        { "no": "5", "time": "0.000350", "src": "00:50:56:c0:00:08", "dst": "00:0c:29:e4:17:86", "proto": "ARP", "len": "60", "info": "192.168.117.1 is at 00:50:56:c0:00:08", "selected": false },
+        { "no": "8", "time": "0.001402", "src": "00:50:56:fd:9c:f5", "dst": "00:0c:29:e4:17:86", "proto": "ARP", "len": "60", "info": "192.168.117.2 is at 00:50:56:fd:9c:f5", "selected": false },
+        { "no": "25", "time": "0.012872", "src": "00:0c:29:8b:4a:12", "dst": "00:0c:29:e4:17:86", "proto": "ARP", "len": "60", "info": "192.168.117.13 is at 00:0c:29:8b:4a:12", "selected": true }
+      ],
+      "details": [
+        "> Ethernet II, Src: 00:0c:29:8b:4a:12, Dst: 00:0c:29:e4:17:86",
+        "v Address Resolution Protocol (reply)",
+        "    Opcode: reply (2)",
+        "    Sender MAC address: 00:0c:29:8b:4a:12 (192.168.117.13)",
+        "    Target MAC address: 00:0c:29:e4:17:86 (192.168.117.10)"
+      ]
+    },
+    {
+      "id": "image1_4",
+      "filename": "image1_4_no_tcp.png",
+      "type": "wireshark",
+      "filter": "tcp || icmp",
+      "rows": [],
+      "details": [
+        "> Không có gói tin TCP hoặc ICMP nào phát sinh trong quá trình nmap -sn",
+        "> Khẳng định: Nmap chỉ sử dụng cơ chế ARP Ping ở tầng liên kết dữ liệu trên mạng LAN cục bộ."
+      ]
+    },
+    {
+      "id": "image2_1",
+      "filename": "image2_1_nmap_ss.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -sS -F 192.168.117.13" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:20 +07",
+        "Nmap scan report for 192.168.117.13",
+        "Host is up (0.00045s latency).",
+        "Not shown: 98 closed ports",
+        "PORT   STATE SERVICE",
+        "22/tcp open  ssh",
+        "80/tcp open  http",
+        "MAC Address: 00:0C:29:8B:4A:12 (VMware)",
+        "",
+        "Nmap done: 1 IP address (1 host up) scanned in 0.28 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image2_2",
+      "filename": "image2_2_tcp_syn.png",
+      "type": "wireshark",
+      "filter": "ip.src == 192.168.117.10 && tcp.flags.syn == 1 && tcp.flags.ack == 0",
+      "rows": [
+        { "no": "32", "time": "0.1021", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "58", "info": "49152 → 21 [SYN] Seq=0 Win=1024 Len=0", "selected": false },
+        { "no": "33", "time": "0.1023", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "58", "info": "49152 → 22 [SYN] Seq=0 Win=1024 Len=0", "selected": true },
+        { "no": "34", "time": "0.1025", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "58", "info": "49152 → 23 [SYN] Seq=0 Win=1024 Len=0", "selected": false },
+        { "no": "35", "time": "0.1027", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "58", "info": "49152 → 80 [SYN] Seq=0 Win=1024 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 49152, Dst Port: 22, Seq: 0",
+        "v Flags: 0x002 (SYN)",
+        "    0... .... .... = Reserved: Not set",
+        "    .... ..0. .... = Acknowledgment: Not set",
+        "    .... ...0 .... = Push: Not set",
+        "    .... .... ..1. = Syn: Set",
+        "    .... .... ...0 = Fin: Not set"
+      ]
+    },
+    {
+      "id": "image2_3a",
+      "filename": "image2_3a_syn_ack.png",
+      "type": "wireshark",
+      "filter": "tcp.flags.syn == 1 && tcp.flags.ack == 1",
+      "rows": [
+        { "no": "48", "time": "0.1031", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "58", "info": "22 → 49152 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0", "selected": true },
+        { "no": "56", "time": "0.1042", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "58", "info": "80 → 49152 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 22, Dst Port: 49152, Seq: 0, Ack: 1",
+        "v Flags: 0x012 (SYN, ACK)",
+        "    .... ..1. .... = Acknowledgment: Set",
+        "    .... .... ..1. = Syn: Set",
+        "> Kết luận: Cổng 22 và cổng 80 phản hồi [SYN, ACK] chứng minh cổng đang ở trạng thái OPEN."
+      ]
+    },
+    {
+      "id": "image2_3b",
+      "filename": "image2_3b_syn_rst.png",
+      "type": "wireshark",
+      "filter": "tcp.port == 22",
+      "rows": [
+        { "no": "33", "time": "0.1023", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "58", "info": "49152 → 22 [SYN] Seq=0 Win=1024 Len=0", "selected": false },
+        { "no": "48", "time": "0.1031", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "58", "info": "22 → 49152 [SYN, ACK] Seq=0 Ack=1 Win=64240 Len=0", "selected": false },
+        { "no": "49", "time": "0.1032", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "54", "info": "49152 → 22 [RST] Seq=1 Win=0 Len=0", "selected": true }
+      ],
+      "details": [
+        "> Quá trình bắt tay nửa mở (Half-open Scan):",
+        "> Bước 1: Máy do thám gửi [SYN]",
+        "> Bước 2: Máy mục tiêu gửi [SYN, ACK]",
+        "v Bước 3: Máy do thám KHÔNG gửi [ACK] mà gửi ngay [RST] để hủy kết nối (không tạo session hoàn chỉnh)"
+      ]
+    },
+    {
+      "id": "image2_4",
+      "filename": "image2_4_rst_ack.png",
+      "type": "wireshark",
+      "filter": "ip.src == 192.168.117.13 && tcp.flags.reset == 1",
+      "rows": [
+        { "no": "38", "time": "0.1026", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "21 → 49152 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0", "selected": true },
+        { "no": "41", "time": "0.1028", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "23 → 49152 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0", "selected": false },
+        { "no": "45", "time": "0.1030", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "25 → 49152 [RST, ACK] Seq=1 Ack=1 Win=0 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 21, Dst Port: 49152, Seq: 1, Ack: 1",
+        "v Flags: 0x014 (RST, ACK)",
+        "    .... ..1. .... = Acknowledgment: Set",
+        "    .... ...1 .... = Reset: Set",
+        "> Kết luận: Cổng 21, 23, 25 phản hồi [RST, ACK] cho thấy các cổng này đang CLOSED."
+      ]
+    },
+    {
+      "id": "image3_1",
+      "filename": "image3_1_nmap_sa.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -sA -F 192.168.117.13" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:25 +07",
+        "Nmap scan report for 192.168.117.13",
+        "Host is up (0.00041s latency).",
+        "All 100 scanned ports on 192.168.117.13 are in ignored states.",
+        "Not shown: 100 unfiltered tcp ports (reset)",
+        "MAC Address: 00:0C:29:8B:4A:12 (VMware)",
+        "",
+        "Nmap done: 1 IP address (1 host up) scanned in 0.22 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image3_2",
+      "filename": "image3_2_ack_flags.png",
+      "type": "wireshark",
+      "filter": "ip.src == 192.168.117.10 && tcp.flags == 0x010",
+      "rows": [
+        { "no": "112", "time": "0.2010", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "54", "info": "51234 → 21 [ACK] Seq=1 Ack=1 Win=1024 Len=0", "selected": false },
+        { "no": "113", "time": "0.2012", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "54", "info": "51234 → 22 [ACK] Seq=1 Ack=1 Win=1024 Len=0", "selected": true },
+        { "no": "114", "time": "0.2014", "src": "192.168.117.10", "dst": "192.168.117.13", "proto": "TCP", "len": "54", "info": "51234 → 80 [ACK] Seq=1 Ack=1 Win=1024 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 51234, Dst Port: 22, Seq: 1, Ack: 1",
+        "v Flags: 0x010 (ACK)",
+        "    .... ..1. .... = Acknowledgment: Set",
+        "    .... .... ..0. = Syn: Not set",
+        "> Đặc điểm: Gói tin chỉ bật cờ ACK gửi đi mà không hề có kết nối trước đó."
+      ]
+    },
+    {
+      "id": "image3_3",
+      "filename": "image3_3_rst_reply.png",
+      "type": "wireshark",
+      "filter": "ip.src == 192.168.117.13 && tcp.flags.reset == 1",
+      "rows": [
+        { "no": "118", "time": "0.2015", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "21 → 51234 [RST] Seq=1 Win=0 Len=0", "selected": false },
+        { "no": "119", "time": "0.2017", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "22 → 51234 [RST] Seq=1 Win=0 Len=0", "selected": true },
+        { "no": "120", "time": "0.2019", "src": "192.168.117.13", "dst": "192.168.117.10", "proto": "TCP", "len": "54", "info": "80 → 51234 [RST] Seq=1 Win=0 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 22, Dst Port: 51234, Seq: 1",
+        "v Flags: 0x004 (RST)",
+        "    .... ...1 .... = Reset: Set",
+        "> Kết luận: Máy mục tiêu gửi [RST] trả về cho các gói ACK → Các cổng đều ở trạng thái unfiltered (không bị Firewall chặn)."
+      ]
+    },
+    {
+      "id": "image3_4",
+      "filename": "image3_4_no_syn.png",
+      "type": "wireshark",
+      "filter": "tcp.flags.syn == 1",
+      "rows": [],
+      "details": [
+        "> Không có bất kỳ gói tin SYN nào xuất hiện trong kịch bản TCP ACK Scan",
+        "> Khẳng định: Nmap chỉ gửi các gói ACK mồ côi (orphaned ACK) để kiểm tra phản hồi RST từ hệ điều hành đích."
+      ]
+    },
+    {
+      "id": "image4_1",
+      "filename": "image4_1_mail_scan.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -p 25,110,143,465,587,993,995 --open 192.168.100.0/24" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:30 +07",
+        "Nmap scan report for 192.168.100.20",
+        "Host is up (0.00052s latency).",
+        "PORT    STATE SERVICE",
+        "25/tcp  open  smtp",
+        "110/tcp open  pop3",
+        "143/tcp open  imap",
+        "993/tcp open  imaps",
+        "995/tcp open  pop3s",
+        "MAC Address: 00:0C:29:3E:71:09 (VMware)",
+        "",
+        "Nmap done: 256 IP addresses (1 host up) scanned in 1.45 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4_2",
+      "filename": "image4_2_os_detect.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -O 192.168.100.20" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:35 +07",
+        "Nmap scan report for 192.168.100.20",
+        "Host is up (0.00048s latency).",
+        "Not shown: 994 closed ports",
+        "PORT    STATE SERVICE",
+        "22/tcp  open  ssh",
+        "25/tcp  open  smtp",
+        "110/tcp open  pop3",
+        "143/tcp open  imap",
+        "993/tcp open  imaps",
+        "995/tcp open  pop3s",
+        "MAC Address: 00:0C:29:3E:71:09 (VMware)",
+        "Device type: general purpose",
+        "Running: Linux 4.X|5.X",
+        "OS CPE: cpe:/o:linux:linux_kernel:4 cpe:/o:linux:linux_kernel:5",
+        "OS details: Linux 4.15 - 5.19",
+        "Network Distance: 1 hop",
+        "",
+        "OS detection performed. Please report any incorrect results at https://nmap.org/submit/ .",
+        "Nmap done: 1 IP address (1 host up) scanned in 2.34 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4_3",
+      "filename": "image4_3_version_detect.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "sudo nmap -sV 192.168.100.20" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-10-21 09:40 +07",
+        "Nmap scan report for 192.168.100.20",
+        "Host is up (0.00046s latency).",
+        "PORT    STATE SERVICE  VERSION",
+        "22/tcp  open  ssh      OpenSSH 9.9p1 Ubuntu 3ubuntu3.2 (Ubuntu Linux; protocol 2.0)",
+        "25/tcp  open  smtp     Postfix smtpd (3.9.1)",
+        "110/tcp open  pop3     Dovecot pop3d (2.3.21.1)",
+        "143/tcp open  imap     Dovecot imapd (Ubuntu)",
+        "993/tcp open  ssl/imap Dovecot imapd (Ubuntu)",
+        "995/tcp open  ssl/pop3 Dovecot pop3d",
+        "MAC Address: 00:0C:29:3E:71:09 (VMware)",
+        "Service Info: Host: mail.lab; OS: Linux; CPE: cpe:/o:linux:linux_kernel",
+        "",
+        "Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .",
+        "Nmap done: 1 IP address (1 host up) scanned in 6.82 seconds",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4_4",
+      "filename": "image4_4_smtp_banner.png",
+      "type": "wireshark",
+      "filter": "smtp",
+      "rows": [
+        { "no": "18", "time": "1.2405", "src": "192.168.100.20", "dst": "192.168.117.10", "proto": "SMTP", "len": "98", "info": "S: 220 mail.lab ESMTP Postfix (Ubuntu)", "selected": true },
+        { "no": "20", "time": "1.2410", "src": "192.168.117.10", "dst": "192.168.100.20", "proto": "SMTP", "len": "60", "info": "C: EHLO mail.lab", "selected": false },
+        { "no": "22", "time": "1.2415", "src": "192.168.100.20", "dst": "192.168.117.10", "proto": "SMTP", "len": "142", "info": "S: 250-mail.lab / 250-PIPELINING / 250 8BITMIME", "selected": false }
+      ],
+      "details": [
+        "> Transmission Control Protocol, Src Port: 25, Dst Port: 48922, Seq: 1, Ack: 1",
+        "v Simple Mail Transfer Protocol",
+        "    Response: 220 mail.lab ESMTP Postfix (Ubuntu)\\r\\n",
+        "        Response code: 220",
+        "        Response parameter: mail.lab ESMTP Postfix (Ubuntu)",
+        "> Banner thu được khẳng định dịch vụ SMTP sử dụng phần mềm Postfix smtpd trên nền hệ điều hành Ubuntu."
+      ]
+    }
+  ]
+}
+
