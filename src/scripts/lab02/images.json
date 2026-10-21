@@ -1,0 +1,271 @@
+{
+  "lab_name": "lab02",
+  "description": "Cấu hình danh sách 15 hình ảnh minh chứng thực tế cho Lab 02",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/it4263lab/lab02"
+  },
+  "images": [
+    {
+      "id": "image1",
+      "filename": "image1_topology.png",
+      "type": "topology",
+      "title": "Mạng ảo LAN Docker (Subnet: 10.2.6.0/24)",
+      "nodes": [
+        { "name": "User (Nạn nhân)", "ip": "10.2.6.10", "mac": "12:35:45:0c:6f:fb", "host": "lab02_user" },
+        { "name": "Attacker (Tấn công)", "ip": "10.2.6.51", "mac": "c6:76:28:e4:17:86", "host": "lab02_attacker" },
+        { "name": "Server (Máy chủ)", "ip": "10.2.6.20", "mac": "9e:21:00:d4:d0:ed", "host": "lab02_server" }
+      ]
+    },
+    {
+      "id": "image2",
+      "filename": "image2_docker_ps.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker ps" },
+        "CONTAINER ID   IMAGE         COMMAND       CREATED        STATUS        PORTS     NAMES",
+        "33cfb4ad4799   lab02_image   \"/bin/bash\"   2 hours ago    Up 2 hours              lab02_attacker",
+        "be111ead0e8f   lab02_image   \"/bin/bash\"   2 hours ago    Up 2 hours              lab02_user",
+        "d763d482f12d   lab02_image   \"/bin/bash\"   2 hours ago    Up 2 hours              lab02_server",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image3",
+      "filename": "image3_user_ifconfig.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_user ifconfig eth0" },
+        "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 10.2.6.10  netmask 255.255.255.0  broadcast 10.2.6.255",
+        "        ether 12:35:45:0c:6f:fb  txqueuelen 0  (Ethernet)",
+        "        RX packets 25  bytes 1890 (1.8 KB)",
+        "        RX errors 0  dropped 0  overruns 0  frame 0",
+        "        TX packets 12  bytes 864 (864.0 B)",
+        "        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4",
+      "filename": "image4_user_arp_init.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        "10.2.6.20                ether   9e:21:00:d4:d0:ed   C                     eth0",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image5",
+      "filename": "image5_server_ifconfig_arp.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_server ifconfig eth0" },
+        "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 10.2.6.20  netmask 255.255.255.0  broadcast 10.2.6.255",
+        "        ether 9e:21:00:d4:d0:ed  txqueuelen 0  (Ethernet)",
+        "        RX packets 28  bytes 2104 (2.1 KB)",
+        "        TX packets 15  bytes 1050 (1.0 KB)",
+        { "prompt": "docker exec -it lab02_server arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        "10.2.6.10                ether   12:35:45:0c:6f:fb   C                     eth0",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image6",
+      "filename": "image6_attacker_ifconfig.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_attacker ifconfig eth0" },
+        "eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500",
+        "        inet 10.2.6.51  netmask 255.255.255.0  broadcast 10.2.6.255",
+        "        ether c6:76:28:e4:17:86  txqueuelen 0  (Ethernet)",
+        "        RX packets 20  bytes 1420 (1.4 KB)",
+        "        TX packets 8   bytes 480 (480.0 B)",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image7",
+      "filename": "image7_wireshark_sc1.png",
+      "type": "wireshark",
+      "filter": "arp",
+      "rows": [
+        { "no": "141", "time": "11.5582", "src": "c6:76:28:e4:17:86", "dst": "Broadcast", "proto": "ARP", "len": "42", "info": "Who has 10.2.6.10? Tell 10.2.6.51", "selected": false },
+        { "no": "142", "time": "11.5583", "src": "12:35:45:0c:6f:fb", "dst": "c6:76:28:e4:17:86", "proto": "ARP", "len": "42", "info": "10.2.6.10 is at 12:35:45:0c:6f:fb", "selected": false },
+        { "no": "143", "time": "11.5601", "src": "c6:76:28:e4:17:86", "dst": "12:35:45:0c:6f:fb", "proto": "ARP", "len": "42", "info": "10.2.6.20 is at c6:76:28:e4:17:86", "selected": true },
+        { "no": "144", "time": "13.5654", "src": "c6:76:28:e4:17:86", "dst": "12:35:45:0c:6f:fb", "proto": "ARP", "len": "42", "info": "10.2.6.20 is at c6:76:28:e4:17:86", "selected": false }
+      ],
+      "details": [
+        "> Frame 143: 42 bytes on wire (336 bits), 42 bytes captured on interface br-net10260",
+        "> Ethernet II, Src: c6:76:28:e4:17:86 (Attacker MAC), Dst: 12:35:45:0c:6f:fb (User MAC)",
+        "v Address Resolution Protocol (reply)",
+        "    Hardware type: Ethernet (1)",
+        "    Protocol type: IPv4 (0x0800)",
+        "    Hardware size: 6 | Protocol size: 4",
+        "    Opcode: reply (2)",
+        "    Sender MAC address: c6:76:28:e4:17:86 (Attacker - FAKE MAC)",
+        "    Sender IP address: 10.2.6.20 (Server - SPOOFED IP)",
+        "    Target MAC address: 12:35:45:0c:6f:fb (User MAC)",
+        "    Target IP address: 10.2.6.10 (User IP)"
+      ]
+    },
+    {
+      "id": "image8",
+      "filename": "image8_attacker_run_scenario1.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_attacker python3 /attack/scenario1.py", "path": "~/it4263lab/lab02/attack" },
+        "[*] Attacker MAC : c6:76:28:e4:17:86",
+        "[*] Target Victim: 10.2.6.10",
+        "[*] Spoofing     : 10.2.6.20 -> MAC c6:76:28:e4:17:86",
+        "[*] Gui ARP Reply lien tuc den nan nhan... (Nhan Ctrl+C de dung)",
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "^C",
+        "[*] Da dung kich ban 1.",
+        { "prompt": "", "path": "~/it4263lab/lab02/attack" }
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_user_arp_poisoned.png",
+      "type": "terminal",
+      "lines": [
+        { "text": "--- Truoc khi bi tan cong: ---", "color": "yellow", "bold": true },
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        "10.2.6.20                ether   9e:21:00:d4:d0:ed   C                     eth0",
+        "",
+        { "text": "--- Sau khi Attacker chay scenario1.py (ARP Reply Spoofing): ---", "color": "yellow", "bold": true },
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        "10.2.6.51                ether   c6:76:28:e4:17:86   C                     eth0",
+        { "text": "10.2.6.20                ether   c6:76:28:e4:17:86   C                     eth0", "color": "red", "bold": true },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image10",
+      "filename": "image10_ping_redirect.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_user ping -c 3 10.2.6.20" },
+        "PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.",
+        "64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.236 ms",
+        { "text": "From 10.2.6.51 icmp_seq=2 Redirect Host(New nexthop: 20.6.2.10)", "color": "yellow", "bold": true },
+        "64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.077 ms",
+        "64 bytes from 10.2.6.20: icmp_seq=3 ttl=64 time=0.082 ms",
+        "",
+        "--- 10.2.6.20 ping statistics ---",
+        "2 packets transmitted, 2 received, +1 errors, 0% packet loss, time 1043ms",
+        "rtt min/avg/max/mdev = 0.077/0.156/0.236/0.079 ms",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image11",
+      "filename": "image11_ping_packet_loss.png",
+      "type": "terminal",
+      "lines": [
+        "# Tren Attacker: chan chuyen tiep goi tin de dung ban chat doc ARP",
+        { "prompt": "docker exec -it lab02_attacker iptables -P FORWARD DROP" },
+        { "prompt": "docker exec -it lab02_user ping -c 3 10.2.6.20" },
+        "PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.",
+        "",
+        "--- 10.2.6.20 ping statistics ---",
+        { "text": "3 packets transmitted, 0 received, 100% packet loss, time 2048ms", "color": "red", "bold": true },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image12",
+      "filename": "image12_scenario2_arp_request.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_attacker python3 /attack/scenario2.py", "path": "~/it4263lab/lab02/attack" },
+        "[*] Attacker MAC : c6:76:28:e4:17:86",
+        "[*] Target Victim: 10.2.6.10",
+        "[*] Spoofing     : 10.2.6.20 -> MAC c6:76:28:e4:17:86",
+        "[*] Gui ARP Request den nan nhan... (Nhan Ctrl+C de dung)",
+        "[+] [Kich ban 2] Sent ARP Request: Who has 10.2.6.10? Tell 10.2.6.20 (c6:76:28:e4:17:86)",
+        "[+] [Kich ban 2] Sent ARP Request: Who has 10.2.6.10? Tell 10.2.6.20 (c6:76:28:e4:17:86)",
+        "^C",
+        "",
+        { "text": "--- Kiem tra tren User: Bieu hien bi dau doc bang ARP Request ---", "color": "yellow", "bold": true },
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        { "text": "10.2.6.20                ether   c6:76:28:e4:17:86   C                     eth0", "color": "red", "bold": true },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image13",
+      "filename": "image13_scenario3_mitm_netcat.png",
+      "type": "terminal",
+      "lines": [
+        { "text": "=== [1] TRUOC KHI TAN CONG (DU LIEU TRUYEN NGUYEN VEN) ===", "color": "cyan", "bold": true },
+        { "prompt": "docker exec -it lab02_server nc -lp 10101" },
+        "Hello Server from Nguyen Bao Long 223001756",
+        "",
+        { "text": "=== [2] KHI ATTACKER CHAY MITM.PY (DANH CHAN & SUA DOI GOI TIN) ===", "color": "cyan", "bold": true },
+        { "prompt": "docker exec -it lab02_attacker python3 /attack/mitm.py", "path": "~/it4263lab/lab02/attack" },
+        "[*] Bat dau MITM giua User (10.2.6.10) va Server (10.2.6.20) port 10101...",
+        "[*] Da kich hoat luong ARP Poisoning song phuong.",
+        "[*] Dang lang nghe tren port 10101... (Nhan Ctrl+C de dung)",
+        { "text": "[!] MITM INTERCEPT: 'Hello Server from Nguyen Bao Long 223001756' -> 'XXXXX XXXXXX XXXX XXXXXX XXX XXXX XXXXXXXXX'", "color": "yellow", "bold": true },
+        "",
+        { "text": "=== [3] SERVER NHAN DUOC DU LIEU BI BIEN DANG ===", "color": "cyan", "bold": true },
+        { "prompt": "docker exec -it lab02_server nc -lp 10101" },
+        { "text": "XXXXX XXXXXX XXXX XXXXXX XXX XXXX XXXXXXXXX", "color": "red", "bold": true },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image14",
+      "filename": "image14_static_arp_config.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab02_user arp -s 10.2.6.20 9e:21:00:d4:d0:ed" },
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        { "text": "10.2.6.20                ether   9e:21:00:d4:d0:ed   CM                    eth0", "color": "green", "bold": true },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image15",
+      "filename": "image15_static_arp_defense_success.png",
+      "type": "terminal",
+      "lines": [
+        "# Attacker co tinh chay lai script dau doc ARP Reply: #",
+        { "prompt": "docker exec -it lab02_attacker python3 /attack/scenario1.py", "path": "~/it4263lab/lab02/attack" },
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "[+] [Kich ban 1] Sent ARP Reply: 10.2.6.20 is-at c6:76:28:e4:17:86 to 10.2.6.10",
+        "^C",
+        "",
+        { "text": "# Kiem tra lai User: MAC Server KHONG HE bi ghi de nho co CM (Permanent) #", "color": "yellow", "bold": true },
+        { "prompt": "docker exec -it lab02_user arp -n" },
+        "Address                  HWtype  HWaddress           Flags Mask            Iface",
+        "10.2.6.51                ether   c6:76:28:e4:17:86   C                     eth0",
+        { "text": "10.2.6.20                ether   9e:21:00:d4:d0:ed   CM                    eth0", "color": "green", "bold": true },
+        "",
+        { "text": "# Kiem tra ping User -> Server van hoat dong 100% thong suot #", "color": "yellow", "bold": true },
+        { "prompt": "docker exec -it lab02_user ping -c 3 10.2.6.20" },
+        "PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.",
+        "64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.043 ms",
+        "64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.060 ms",
+        "64 bytes from 10.2.6.20: icmp_seq=3 ttl=64 time=0.084 ms",
+        "--- 10.2.6.20 ping statistics ---",
+        { "text": "3 packets transmitted, 3 received, 0% packet loss, time 2026ms", "color": "green", "bold": true },
+        { "prompt": "" }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,269 @@
+{
+  "lab_name": "lab02",
+  "metadata": {
+    "title": "BÁO CÁO BÀI THỰC HÀNH SỐ 2",
+    "subtitle": "TẤN CÔNG VÀ PHÒNG CHỐNG ARP CACHE POISONING TRONG MẠNG LAN",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab02.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "YÊU CẦU KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "paragraph",
+      "text": "Thực hiện các kịch bản tấn công ARP Cache Poisoning (ARP Spoofing) và tấn công leo thang Man-In-The-Middle (MITM) can thiệp sửa đổi gói tin trong môi trường mạng ảo hóa Docker. Sau đó tiến hành thiết lập giải pháp phòng chống bằng ánh xạ ARP tĩnh và đánh giá hiệu quả."
+    },
+    {
+      "type": "heading_1",
+      "text": "KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Triển khai môi trường thực hành (1 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Mô hình thực hành được xây dựng trên máy chủ Linux Ubuntu qua Docker Compose, gồm 3 container kết nối cùng mạng bridge ảo net-10.2.6.0 (Subnet 10.2.6.0/24 ứng với mã lớp 02 và nhóm 6):"
+    },
+    {
+      "type": "bullet",
+      "text": "Container User (Nạn nhân): đóng vai trò máy người dùng truy cập dịch vụ, IP: 10.2.6.10"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Server (Máy đích): đóng vai trò máy chủ cung cấp dịch vụ mạng (Netcat port 10101), IP: 10.2.6.20"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Attacker (Kẻ tấn công): đóng vai trò máy tấn công thực thi các script Scapy để đầu độc ARP và can thiệp lưu lượng, IP: 10.2.6.51"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image1_topology.png",
+      "caption": "Hình 1 – Sơ đồ mạng gồm 3 container: User, Attacker, Server",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Danh sách các container đang hoạt động trên hệ thống:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image2_docker_ps.png",
+      "caption": "Hình 2 – Danh sách container đang chạy (docker ps)",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "1.1. Thông số các container trước khi thực hiện tấn công:\nTiến hành kiểm tra địa chỉ IP, địa chỉ MAC và bảng ánh xạ ARP cache ban đầu của cả 3 container khi chưa thực hiện tấn công:"
+    },
+    {
+      "type": "table",
+      "headers": ["Máy Container", "Địa chỉ IP", "Địa chỉ MAC"],
+      "rows": [
+        ["User (Nạn nhân)", "10.2.6.10", "12:35:45:0c:6f:fb"],
+        ["Server (Máy chủ)", "10.2.6.20", "9e:21:00:d4:d0:ed"],
+        ["Attacker (Tấn công)", "10.2.6.51", "c6:76:28:e4:17:86"]
+      ]
+    },
+    {
+      "type": "paragraph",
+      "text": "Thông số chi tiết và bảng ARP ban đầu trên từng máy:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image3_user_ifconfig.png",
+      "caption": "Hình 3 – Địa chỉ IP và MAC của User (ifconfig eth0)",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image4_user_arp_init.png",
+      "caption": "Hình 4 – Bảng ARP cache ban đầu của User (arp -n)",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image5_server_ifconfig_arp.png",
+      "caption": "Hình 5 – Địa chỉ IP/MAC và bảng ARP cache ban đầu của Server",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image6_attacker_ifconfig.png",
+      "caption": "Hình 6 – Địa chỉ IP/MAC của Attacker (ifconfig eth0)",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "2. Kịch bản 1 – Tấn công ARP Cache Poisoning bằng gói tin ARP Reply (2 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích lưu lượng tấn công và kết quả quan sát được trên mạng ảo để trả lời các yêu cầu sau:"
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 1: ",
+      "text": "Gói tin ARP giả mạo máy tấn công đã gửi (1 điểm): Sử dụng Wireshark và tcpdump bắt gói tin trên cạc mạng bridge ảo của Docker khi Attacker thực thi script ~/it4263lab/lab02/attack/scenario1.py:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image7_wireshark_sc1.png",
+      "caption": "Hình 7 – Gói tin ARP Reply giả mạo bắt được trên Wireshark",
+      "width": 6.2
+    },
+    {
+      "type": "bullet",
+      "text": "Số thứ tự (No.): 143 (khớp với khung tin đã chọn và khoanh vùng trên Wireshark)"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP nguồn (Sender IP): 10.2.6.20 (Địa chỉ IP của Server)"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP đích (Target IP): 10.2.6.10 (Địa chỉ IP của User)"
+    },
+    {
+      "type": "bullet",
+      "text": "Loại gói tin: ARP Reply (Opcode = 2)"
+    },
+    {
+      "type": "bullet",
+      "text": "Đặc điểm khác thường của gói tin so với thực tế: Địa chỉ MAC nguồn (Sender MAC) trong gói tin là c6:76:28:e4:17:86 (đây là địa chỉ MAC của máy Attacker), trong khi địa chỉ IP nguồn khai báo lại là 10.2.6.20 (IP của Server). Đây là gói tin giả mạo nhằm đánh lừa máy User rằng IP Server đang sở hữu MAC của Attacker."
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 2: ",
+      "text": "Máy bị tấn công và hậu quả (1 điểm):\n• Máy bị tấn công: Máy User (10.2.6.10).\n• Quá trình tấn công: Attacker khởi chạy script scenario1.py gửi liên tục các gói tin ARP Reply giả mạo tới máy User. Do giao thức ARP không có cơ chế kiểm tra tính xác thực của gói tin nên entry cũ trong ARP cache của User bị ghi đè."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image8_attacker_run_scenario1.png",
+      "caption": "Hình 8 – Attacker chạy script gửi liên tục gói ARP Reply giả mạo tới User",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image9_user_arp_poisoned.png",
+      "caption": "Hình 9 – Bảng ARP cache của User trước và sau khi bị đầu độc",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "• Hậu quả thực tế: Địa chỉ MAC ứng với IP của Server trong ARP cache của User đã đổi thành địa chỉ MAC của Attacker. Toàn bộ lưu lượng User gửi tới Server (IP 10.2.6.20) bị chuyển hướng tới Attacker.\n• Kiểm tra bằng lệnh ping từ User tới Server:\nKhi User ping tới 10.2.6.20, gói tin ICMP Echo Request gửi tới MAC của Attacker. Tuỳ thuộc vào cấu hình chuyển tiếp:\n1. Nếu Attacker bật ip_forward=1, Attacker sẽ chuyển tiếp gói tin nhưng gửi thông báo ICMP Redirect cảnh báo (Hình 10).\n2. Nếu Attacker áp dụng chính sách chặn chuyển tiếp (FORWARD DROP), gói tin ping bị mất 100% (Hình 11), làm gián đoạn liên lạc hoàn toàn."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image10_ping_redirect.png",
+      "caption": "Hình 10 – Kết quả ping từ User tới Server trong lúc bị tấn công (kèm thông báo ICMP Redirect)",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image11_ping_packet_loss.png",
+      "caption": "Hình 11 – Kết quả ping khi Attacker không chuyển tiếp (100% packet loss)",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "3. Kịch bản 2 – Tấn công ARP Cache Poisoning bằng gói tin ARP Request (2 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích kịch bản tấn công đầu độc ARP sử dụng gói tin ARP Request (thực thi kịch bản ~/it4263lab/lab02/attack/scenario2.py):"
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 1: ",
+      "text": "Gói tin ARP giả mạo máy tấn công đã gửi (1 điểm): Attacker phát sóng gói tin ARP Request giả mạo dạng Broadcast hoặc Unicast: 'Who has 10.2.6.10? Tell 10.2.6.20':\n• Số thứ tự (No.): Khung tin tương ứng trong phiên bắt tcpdump/Wireshark.\n• Địa chỉ nguồn: 10.2.6.20 (Địa chỉ IP của Server)\n• Địa chỉ đích: 10.2.6.10 (hoặc Broadcast ff:ff:ff:ff:ff:ff)\n• Loại gói tin: ARP Request (Opcode = 1)\n• Đặc điểm khác thường: Gói tin hỏi tìm địa chỉ của User nhưng trường Sender IP lại là 10.2.6.20 (Server) và trường Sender MAC lại là c6:76:28:e4:17:86 (Attacker)."
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 2: ",
+      "text": "Máy bị tấn công và hậu quả (1 điểm):\n• Máy bị tấn công: Máy User (10.2.6.10).\n• Hậu quả: Khi nhận được gói tin ARP Request hỏi thăm mình, hệ điều hành của User theo chuẩn RFC sẽ tự động lưu lại thông tin người gửi (Sender IP và Sender MAC) vào ARP cache của mình để phục vụ cho phản hồi sau đó. Kết quả là bảng ARP cache của User bị nhiễm độc: ánh xạ 10.2.6.20 bị gán cho MAC của Attacker."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image12_scenario2_arp_request.png",
+      "caption": "Hình 12 – Attacker thực thi kịch bản 2 (ARP Request) và bảng ARP của User bị đầu độc",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "4. Kịch bản 3 – Tấn công Man-In-The-Middle (MITM) can thiệp sửa đổi gói tin Netcat (3 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Trong kịch bản này, kẻ tấn công thực hiện tấn công đứng giữa (Man-In-The-Middle) để chặn và can thiệp sửa đổi thông điệp truyền qua Netcat cổng 10101 giữa User và Server:"
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 1: ",
+      "text": "Tìm các gói tin máy tấn công đã gửi đi (1 điểm): Để đứng giữa hai máy, Attacker thực hiện đầu độc ARP song phương (hai chiều):\n1. Gửi gói ARP giả tới User: báo rằng 10.2.6.20 (Server) đang ở MAC của Attacker (c6:76:28:e4:17:86).\n2. Gửi gói ARP giả tới Server: báo rằng 10.2.6.10 (User) đang ở MAC của Attacker (c6:76:28:e4:17:86).\nKhi đó, cả User và Server đều gửi dữ liệu trực tiếp qua Attacker."
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 2: ",
+      "text": "Hậu quả của tấn công trên các máy nạn nhân (1 điểm): Cả hai máy User và Server đều bị đầu độc bảng ARP. Toàn bộ các gói tin TCP trên cổng 10101 đều được gửi tới Attacker trước khi được Attacker xem xét, sửa đổi và chuyển tiếp tới đích thực sự."
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 3: ",
+      "text": "So sánh thông điệp mà máy Server nhận được trước và sau khi bị tấn công (1 điểm):\n• Trước khi bị tấn công (Phiên kết nối bình thường): Server mở cổng lắng nghe ($ nc -lp 10101), User kết nối và gửi: 'Hello Server from Nguyen Bao Long 223001756'. Server nhận chính xác và nguyên vẹn nội dung này.\n• Sau khi bị tấn công (Attacker chạy script mitm.py): Attacker kích hoạt chuyển tiếp ip_forward=1 và chạy script ~/it4263lab/lab02/attack/mitm.py. User gửi thông điệp 'Hello Server from Nguyen Bao Long 223001756', Attacker chặn gói tin TCP, thay thế toàn bộ ký tự thành 'X', tính toán lại checksum rồi chuyển tiếp tới Server. Server nhận được chuỗi biến dạng 'XXXXX XXXXXX XXXX XXXXXX XXX XXXX XXXXXXXXX'."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image13_scenario3_mitm_netcat.png",
+      "caption": "Hình 13 – Tấn công MITM: Can thiệp và sửa đổi thông điệp Netcat truyền từ User đến Server",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Phân tích nguyên nhân: ",
+      "text": "Attacker đã thành công trong việc đứng giữa (MITM) dựa trên điểm yếu của giao thức ARP. Vì Netcat truyền dữ liệu dạng plain-text (không mã hóa và không có chữ ký số/MAC toàn vẹn), kẻ tấn công ở giữa hoàn toàn có thể đọc được nội dung (Eavesdropping), sửa đổi nội dung theo ý muốn (Tampering) và tính toán lại checksum hợp lệ để máy đích tiếp nhận mà không hề hay biết."
+    },
+    {
+      "type": "heading_2",
+      "text": "5. Phòng chống tấn công bằng ánh xạ ARP tĩnh (2 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 1: ",
+      "text": "Lệnh định nghĩa ánh xạ ARP cố định trên máy User (0.5 điểm):\nTrên máy User, thực hiện lệnh sau để thiết lập ánh xạ tĩnh (Static) khoá cứng địa chỉ IP của Server vào MAC thật của Server:\nLệnh thực hiện: arp -s 10.2.6.20 9e:21:00:d4:d0:ed"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image14_static_arp_config.png",
+      "caption": "Hình 14 – Cấu hình entry ARP tĩnh (cờ CM) cho Server trên máy User",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Yêu cầu 2: ",
+      "text": "Kết quả tấn công và giải thích (1.5 điểm):\n• Thực nghiệm: Sau khi đặt ARP tĩnh trên User, Attacker chạy lại kịch bản tấn công (gửi hàng loạt gói ARP Reply giả mạo để gán IP Server về MAC Attacker). Kết quả kiểm tra bảng ARP trên User: Ánh xạ 10.2.6.20 vẫn giữ nguyên địa chỉ MAC thật 9e:21:00:d4:d0:ed với cờ CM. Đòn tấn công thất bại hoàn toàn. User ping tới Server vẫn nhận phản hồi tức thì với 0% packet loss."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab02/image15_static_arp_defense_success.png",
+      "caption": "Hình 15 – Chạy lại tấn công sau khi áp dụng ARP tĩnh: kết nối vẫn an toàn và thông suốt",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "bold_prefix": "Giải thích cơ chế bảo vệ: ",
+      "text": "Bảng ARP cache mặc định hoạt động ở chế độ động (Dynamic - cờ C), cho phép mọi gói tin ARP Reply cập nhật đè lên entry cũ. Khi chuyển sang chế độ tĩnh (Static - cờ M/CM, Permanent), hệ điều hành sẽ lưu ánh xạ này vào vùng nhớ cố định của kernel và từ chối mọi yêu cầu cập nhật động từ các gói ARP nhận được qua mạng.\n• Đánh giá giải pháp thực tế: Cấu hình ARP tĩnh có ưu điểm đơn giản, hiệu quả tuyệt đối với quy mô nhỏ; tuy nhiên trong môi trường mạng doanh nghiệp lớn hàng trăm thiết bị, việc quản lý và cập nhật thủ công rất khó khả thi. Để phòng chống ARP Spoofing toàn diện trong thực tế, các doanh nghiệp thường triển khai tính năng Dynamic ARP Inspection (DAI) trên Switch kết hợp cùng DHCP Snooping."
+    }
+  ]
+}
+

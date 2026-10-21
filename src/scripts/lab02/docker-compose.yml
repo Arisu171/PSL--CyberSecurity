@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+  user:
+    image: lab02_image
+    container_name: lab02_user
+    hostname: user
+    tty: true
+    stdin_open: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.10
+
+  server:
+    image: lab02_image
+    container_name: lab02_server
+    hostname: server
+    tty: true
+    stdin_open: true
+    cap_add:
+      - NET_ADMIN
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.20
+
+  attacker:
+    image: lab02_image
+    container_name: lab02_attacker
+    hostname: attacker
+    tty: true
+    stdin_open: true
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./attack:/attack
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.51
+
+networks:
+  labnet:
+    name: net-10.2.6.0
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.6.0/24
