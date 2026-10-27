@@ -1,0 +1,16 @@
+options {
+	directory "/var/cache/bind";
+
+	// dnssec-validation auto;
+	dnssec-validation no;
+	dnssec-enable no;
+	dump-file "/var/cache/bind/dump.db";
+	query-source port 44444;
+
+	// Access control
+	allow-query { any; };
+	allow-query-cache { any; };
+	allow-recursion { any; };
+
+	listen-on-v6 { any; };
+};

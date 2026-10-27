@@ -30,7 +30,7 @@ CONFIG = {
     "user": "orias",                                # Tên người dùng SSH
     "port": 22,                                     # Cổng SSH
     "key_file": None,                               # Đường dẫn SSH key riêng - None = mặc định
-    "output_file": "bin/results.json",  # File lưu kết quả thực nghiệm
+    "output_file": "bin/results.json",              # File lưu kết quả thực nghiệm
     "scripts_filename": "scripts.json"              # Tên file kịch bản trong thư mục lab
 }
 # ==========================================================

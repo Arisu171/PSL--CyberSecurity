@@ -1,0 +1,251 @@
+{
+  "lab_name": "lab03",
+  "metadata": {
+    "title": "BÁO CÁO BÀI THỰC HÀNH SỐ 3",
+    "subtitle": "PHÂN TÍCH MỘT SỐ KỸ THUẬT TẤN CÔNG GIAO THỨC DNS",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab03.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "YÊU CẦU KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "paragraph",
+      "text": "Đóng gói các kết quả vào file nén có tên theo định dạng Nhom6_Lab03_BaoCao.zip, bao gồm file Báo cáo kết quả thực hành dạng Word/PDF và 2 file bắt lưu lượng mạng: attacker.pcap và local_dns_server.pcap."
+    },
+    {
+      "type": "heading_1",
+      "text": "KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Triển khai hệ thống (1 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Môi trường thực hành gồm 4 container chạy trên mạng ảo hóa Docker bridge net-10.2.6.0 (Subnet 10.2.6.0/24):"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Attacker (Máy tấn công): IP 10.2.6.1"
+    },
+    {
+      "type": "bullet",
+      "text": "Container User (Máy người dùng): IP 10.2.6.5, cấu hình trỏ DNS về 10.2.6.53"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Local DNS Server (Máy chủ phân giải nội bộ): IP 10.2.6.53, cấu hình query-source port 44444"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Attacker Nameserver (Máy chủ DNS độc hại): IP 10.2.6.153, quản lý zone attacker32.com"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả thực hiện lệnh tìm kiếm tên miền # dig ns.attacker32.com trên máy User:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image1_dig_attacker_ns.png",
+      "caption": "Hình 1 – Kết quả truy vấn tên miền ns.attacker32.com qua Local DNS Server (IP: 10.2.6.153)",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả thực hiện lệnh tìm kiếm tên miền # dig www.example.com trên máy User (trước khi tấn công):"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image2_dig_example_legit.png",
+      "caption": "Hình 2 – Kết quả truy vấn www.example.com ban đầu trả về địa chỉ IP chính thức (172.66.147.243 / 104.20.23.154)",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả thực hiện lệnh tìm kiếm tên miền # dig @ns.attacker32.com www.example.com trực tiếp trên máy chủ Attacker Server:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image3_dig_example_direct.png",
+      "caption": "Hình 3 – Kết quả truy vấn www.example.com trực tiếp tới Attacker NS trả về địa chỉ IP giả mạo (1.2.3.5)",
+      "width": 6.2
+    },
+    {
+      "type": "heading_2",
+      "text": "2. Tạo thông điệp DNS Query truy vấn (2 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Các thông tin trên thông điệp truy vấn đã sử dụng trong script gen_query.py (1 điểm):"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP nguồn: 10.2.6.1 (Địa chỉ IP của máy Attacker)"
+    },
+    {
+      "type": "bullet",
+      "text": "Số hiệu cổng nguồn: 12345 (Cổng UDP ngẫu nhiên do máy Attacker mở)"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP đích: 10.2.6.53 (Địa chỉ IP của máy nạn nhân Local DNS Server)"
+    },
+    {
+      "type": "bullet",
+      "text": "Số hiệu cổng đích: 53 (Cổng dịch vụ DNS tiêu chuẩn)"
+    },
+    {
+      "type": "bullet",
+      "text": "Tên miền được truy vấn: <subdomain_ngẫu_nhiên>.example.com (ví dụ: twysw.example.com, aamqn.example.com)"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image4_gen_query.png",
+      "caption": "Hình 4 – Thực thi gen_query.py để tạo file binary thông điệp truy vấn ip_req.bin",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Tại sao thực hiện truy vấn tới một tên miền không tồn tại? (1 điểm):\nTrong kỹ thuật Kaminsky DNS Cache Poisoning, nếu kẻ tấn công gửi truy vấn một tên miền đã tồn tại hoặc đã có trong bộ nhớ cache của Local DNS Server (như www.example.com hay example.com), Local DNS Server sẽ ngay lập tức trả lời từ cache nội bộ mà không thực hiện bất kỳ truy vấn nào ra các máy chủ DNS bên ngoài. Bằng cách liên tục gửi truy vấn với các tiền tố tên miền ngẫu nhiên không tồn tại (như abcde.example.com), Local DNS Server chắc chắn gặp tình trạng Cache Miss, buộc phải gửi gói tin DNS Query ra ngoài Internet tới các máy chủ tên miền có thẩm quyền (Authoritative Name Server). Việc này tạo ra 'cửa sổ thời gian' (window of vulnerability) để kẻ tấn công gửi hàng loạt các gói DNS Response giả mạo nhằm đoán trúng Transaction ID trước khi gói tin hợp lệ từ máy chủ thật phản hồi về."
+    },
+    {
+      "type": "heading_2",
+      "text": "3. Tạo thông điệp DNS Response giả mạo (2 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Thông điệp DNS Response giả mạo gửi đi từ nút mạng nào? (0.5 điểm):\nThông điệp DNS Response giả mạo được gửi đi vật lý từ máy Attacker (IP 10.2.6.1), nhưng trên tiêu đề gói tin IP/UDP, kẻ tấn công đã làm giả mạo (spoofing) địa chỉ IP nguồn thành địa chỉ của máy chủ quản lý tên miền có thẩm quyền của example.com (108.162.192.162 - hera.ns.cloudflare.com)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Các thông tin trên thông điệp trả lời giả mạo trong gen_response.py (1 điểm):"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP nguồn: 108.162.192.162 (Địa chỉ IP giả mạo của Authoritative Nameserver cho example.com)"
+    },
+    {
+      "type": "bullet",
+      "text": "Số hiệu cổng nguồn: 53 (Cổng dịch vụ DNS của Nameserver)"
+    },
+    {
+      "type": "bullet",
+      "text": "Địa chỉ IP đích: 10.2.6.53 (Địa chỉ IP của Local DNS Server)"
+    },
+    {
+      "type": "bullet",
+      "text": "Số hiệu cổng đích: 44444 (Cổng cố định mà Local DNS Server sử dụng để gửi truy vấn ra ngoài)"
+    },
+    {
+      "type": "bullet",
+      "text": "Thông tin tên miền đã giả mạo:\n• Question Section: Tên miền ngẫu nhiên đang được truy vấn (ví dụ: twysw.example.com).\n• Answer Section: Bản ghi A gán twysw.example.com -> 1.2.3.4 (TTL = 259200s).\n• Authority Section: Bản ghi NS quan trọng nhất: example.com. IN NS ns.attacker32.com. (Chuyển quyền quản lý toàn bộ zone example.com cho máy chủ của Attacker).\n• Additional Section: Bản ghi A gán ns.attacker32.com -> 10.2.6.153."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image5_gen_response.png",
+      "caption": "Hình 5 – Thực thi gen_response.py để tạo file binary thông điệp phản hồi giả mạo ip_resp.bin",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Để tấn công thành công, thông điệp trả lời giả mạo phải thỏa mãn các điều kiện gì? (0.5 điểm):\n1. Thời gian đến (Race Condition): Gói tin phản hồi giả mạo phải đến Local DNS Server trước gói tin phản hồi thật từ máy chủ có thẩm quyền.\n2. Khớp địa chỉ IP nguồn: IP nguồn phải đúng là IP của Nameserver mà Local DNS Server vừa gửi truy vấn tới (108.162.192.162).\n3. Khớp cổng dịch vụ: Cổng nguồn phải là 53 và cổng đích phải là 44444 (cổng mà Local DNS Server đang mở chờ phản hồi).\n4. Khớp Transaction ID: Giá trị 16-bit Transaction ID trong DNS Header phải trùng khớp hoàn toàn với Transaction ID ngẫu nhiên do Local DNS Server sinh ra cho truy vấn tương ứng.\n5. Khớp nội dung truy vấn: Tên miền trong phần Question Section của gói tin trả lời phải trùng khớp với tên miền đang được truy vấn."
+    },
+    {
+      "type": "heading_2",
+      "text": "4. Thực hiện tấn công (4 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích lưu lượng tấn công đã bắt được và chỉ ra thông điệp DNS Query mà Attacker đã gửi đi (0.5 điểm):"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image6_wireshark_query_attacker.png",
+      "caption": "Hình 6 – Gói tin DNS Query gửi từ máy Attacker (10.2.6.1) tới Local DNS Server (10.2.6.53) trên Wireshark",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích lưu lượng đã bắt được trên máy Local DNS Server và chỉ ra thông điệp DNS Query mà máy này đã gửi đi. Thông điệp này gửi tới máy nào? (0.5 điểm):\nKhi nhận được query tên miền lạ, Local DNS Server (10.2.6.53) lập tức mở cổng UDP 44444 để gửi thông điệp DNS Query đệ quy tới máy chủ quản lý có thẩm quyền của example.com (108.162.192.162 - hera.ns.cloudflare.com):"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image7_wireshark_query_localdns.png",
+      "caption": "Hình 7 – Gói tin DNS Query đệ quy gửi từ Local DNS Server (10.2.6.53:44444) tới Authoritative NS (108.162.192.162:53)",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Đặc điểm lưu lượng trên máy Local DNS Server khi bị tấn công là gì? (0.5 điểm):\nKhi chương trình attack chạy, lưu lượng trên Local DNS Server xuất hiện một lượng cực lớn và liên tục các gói tin DNS Response giả mạo từ IP 108.162.192.162 dồn dập đổ về cổng 44444. Các gói tin này có cùng kích thước và nội dung nhưng trường Transaction ID biến thiên liên tục trong không gian 16-bit nhằm vét cạn để tìm giá trị trùng khớp:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image8_wireshark_flood_response.png",
+      "caption": "Hình 8 – Lưu lượng các gói DNS Response giả mạo với Transaction ID biến thiên dồn dập gửi về cổng 44444 của Local DNS Server",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Gói tin DNS Response giả mạo đã được Local DNS Server chấp nhận (0.5 điểm):\nTại Frame số 18, gói tin phản hồi giả mạo mang Transaction ID = 0x4f12 trùng khớp với Transaction ID của gói tin truy vấn Frame số 13 do Local DNS Server phát đi. Gói tin này tới đích trước khi máy chủ Cloudflare kịp trả lời, do đó Local DNS Server chấp nhận gói tin này là hợp lệ và ghi dữ liệu độc hại vào cache:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image9_wireshark_accepted_response.png",
+      "caption": "Hình 9 – Đối sánh gói tin Query và gói tin Response giả mạo mang Transaction ID 0x4f12 được Local DNS Server chấp nhận",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích nội dung bộ đệm dịch vụ của Local DNS Server để cho thấy tấn công đã thành công (0.5 điểm):\nTrích xuất bộ đệm bằng lệnh rndc dumpdb -cache và kiểm tra file /var/cache/bind/dump.db cho thấy bản ghi NS của toàn bộ zone example.com đã bị thay thế thành ns.attacker32.com:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image10_localdns_cache_dump.png",
+      "caption": "Hình 10 – Bộ đệm dịch vụ dump.db của Local DNS Server bị nhiễm độc, trỏ example.com về ns.attacker32.com",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Phân tích kết quả tìm kiếm thông tin tên miền trên máy User để cho thấy Local DNS Server đã bị đầu độc (0.5 điểm):\nKhi máy User truy vấn tên miền www.example.com, Local DNS Server sử dụng thông tin NS đã bị đầu độc trong cache để chuyển tiếp truy vấn tới máy chủ độc hại ns.attacker32.com (10.2.6.153). Kết quả trả về cho máy User là địa chỉ IP giả mạo 1.2.3.5 thay vì địa chỉ IP chính thức ban đầu:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image11_dig_poisoned_user.png",
+      "caption": "Hình 11 – Máy User truy vấn www.example.com nhận về IP giả mạo 1.2.3.5 từ máy chủ độc hại của Attacker",
+      "width": 6.2
+    },
+    {
+      "type": "paragraph",
+      "text": "Mô tả ngắn gọn kịch bản tấn công đã xảy ra (0.5 điểm):\nKẻ tấn công thực thi kỹ thuật Kaminsky Attack: Bằng cách liên tục gửi các yêu cầu phân giải tên miền con ngẫu nhiên (ví dụ twysw.example.com), kẻ tấn công kích hoạt Local DNS Server gửi truy vấn ra ngoài. Ngay sau đó, kẻ tấn công bắn dồn dập hàng trăm gói phản hồi giả mạo với cổng cố định 44444 và các Transaction ID ngẫu nhiên. Khi một gói tin giả đoán trúng Transaction ID và đến trước phản hồi chính thức, bản ghi NS độc hại (example.com -> ns.attacker32.com) được lưu vào bộ nhớ đệm của Local DNS Server. Từ thời điểm này, mọi truy vấn tới bất kỳ địa chỉ nào của example.com đều được định tuyến về máy chủ của Attacker."
+    },
+    {
+      "type": "paragraph",
+      "text": "Giải thích ngắn gọn và khái quát các hậu quả của cuộc tấn công? (0.5 điểm):\n1. Tấn công mạo danh người dùng (Phishing & Credential Theft): Kẻ tấn công có thể dựng website giả mạo hoàn toàn giao diện ngân hàng, cổng đăng nhập của tổ chức nhằm đánh cắp tài khoản, mật khẩu, mã OTP của tất cả người dùng trong mạng nội bộ.\n2. Tấn công Man-In-The-Middle diện rộng: Mọi lưu lượng truy cập web, email (SMTP/IMAP) thuộc tên miền bị đầu độc đều bị chuyển hướng qua máy chủ của Attacker để nghe lén, ghi lại hoặc thay đổi nội dung dữ liệu.\n3. Phạm vi ảnh hưởng lớn (Scale Effect): Đòn tấn công không chỉ ảnh hưởng một máy tính cá nhân mà ảnh hưởng tới TOÀN BỘ máy trạm sử dụng Local DNS Server làm máy chủ phân giải trong toàn bộ hệ thống mạng doanh nghiệp/tổ chức."
+    },
+    {
+      "type": "heading_2",
+      "text": "5. Phòng chống tấn công (1 điểm)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Tại sao sử dụng cổng ứng dụng ngẫu nhiên để gửi thông điệp truy vấn DNS Query lại có tác dụng phòng chống tấn công DNS Cache Poisoning?\n\nPhân tích xác suất toán học:\n1. Khi cổng nguồn cố định (Port 44444): Kẻ tấn công chỉ cần đoán đúng trường Transaction ID có độ dài 16-bit, tương đương 65,536 khả năng:\n\\[ P_{hit} = \\frac{N_{spoofed}}{65,536} \\]\nVới tốc độ truyền tải gói raw socket vài nghìn gói/giây, xác suất đoán trúng đạt xấp xỉ 100% chỉ trong vài giây.\n\n2. Khi kích hoạt Source Port Randomization (SPR): Mỗi khi Local DNS Server gửi một truy vấn ra ngoài, hệ điều hành sẽ cấp phát một cổng nguồn ngẫu nhiên trong dải Ephemeral Ports (từ 1024 đến 65535, khoảng 60,000 cổng khả dụng). Lúc này, để gói tin giả mạo được chấp nhận, kẻ tấn công phải đoán đúng ĐỒNG THỜI cả Transaction ID (16-bit) và Source Port (16-bit):\n\\[ \\text{Không gian tìm kiếm} = 65,536 \\times 60,000 \\approx 3.93 \\times 10^9 \\text{ (gần 4 tỷ khả năng)} \\]\n\\[ P_{hit} = \\frac{N_{spoofed}}{3,932,160,000} \\approx 0 \\]\n\nDo thời gian phản hồi hợp lệ của Internet chỉ mất từ vài chục đến vài trăm mili-giây, kẻ tấn công hoàn toàn không có đủ băng thông và thời gian để gửi hàng tỷ gói tin nhằm vét cạn không gian này. Do đó, kỹ thuật ngẫu nhiên hóa cổng nguồn triệt tiêu gần như hoàn toàn khả năng thành công của tấn công Kaminsky DNS Cache Poisoning."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab03/image12_defense_random_port.png",
+      "caption": "Hình 12 – Cấu hình phòng thủ xóa cổng cố định, khôi phục phân giải chính xác cho www.example.com",
+      "width": 6.2
+    }
+  ]
+}
+

@@ -1,0 +1,62 @@
+version: "3"
+
+services:
+  local-server:
+    build: ./image_local_dns_server
+    image: seed-local-dns-server
+    container_name: local-dns-server-10.2.6.53
+    tty: true
+    cap_add:
+      - ALL
+    networks:
+      seed-net:
+        ipv4_address: 10.2.6.53
+
+  user:
+    build: ./image_user
+    image: seed-user
+    container_name: user-10.2.6.5
+    tty: true
+    stdin_open: true
+    cap_add:
+      - ALL
+    networks:
+      seed-net:
+        ipv4_address: 10.2.6.5
+
+  attacker:
+    image: handsonsecurity/seed-ubuntu:large
+    container_name: attacker-10.2.6.1
+    tty: true
+    stdin_open: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./attack:/attack
+      - ./volumes:/volumes
+    networks:
+      seed-net:
+        ipv4_address: 10.2.6.1
+
+  attacker_ns:
+    build: ./image_attacker_ns
+    image: seed-attacker_ns
+    container_name: attacker-ns-10.2.6.153
+    tty: true
+    cap_add:
+      - ALL
+    networks:
+      seed-net:
+        ipv4_address: 10.2.6.153
+
+networks:
+  seed-net:
+    name: seed-net
+    ipam:
+      config:
+        - subnet: 10.2.6.0/24
+          gateway: 10.2.6.254
+
+
+

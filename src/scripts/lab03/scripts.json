@@ -1,0 +1,102 @@
+{
+  "lab_name": "lab03",
+  "description": "Kịch bản tự động hóa thực nghiệm Lab 03 - Phân tích kịch bản tấn công DNS Cache Poisoning (Kaminsky Attack)",
+  "steps": [
+    {
+      "key": "prep_docker_ps",
+      "name": "Kiểm tra danh sách 4 Docker containers đang chạy",
+      "command": "sudo docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'"
+    },
+    {
+      "key": "prep_ping_dns",
+      "name": "User ping kiểm tra kết nối tới Local DNS Server (10.2.6.53)",
+      "command": "sudo docker exec user-10.2.6.5 ping -c 2 10.2.6.53"
+    },
+    {
+      "key": "prep_ping_attacker_ns",
+      "name": "User ping kiểm tra kết nối tới Attacker Nameserver (10.2.6.153)",
+      "command": "sudo docker exec user-10.2.6.5 ping -c 2 10.2.6.153"
+    },
+    {
+      "key": "prep_ping_attacker",
+      "name": "User ping kiểm tra kết nối tới Attacker (10.2.6.1)",
+      "command": "sudo docker exec user-10.2.6.5 ping -c 2 10.2.6.1"
+    },
+    {
+      "key": "step11_dig_attacker_ns",
+      "name": "[Mục 4.1] Trên máy User thực hiện tìm kiếm tên miền ns.attacker32.com",
+      "command": "sudo docker exec user-10.2.6.5 dig ns.attacker32.com"
+    },
+    {
+      "key": "step12_dig_example_legit",
+      "name": "[Mục 4.1] Trên máy User thực hiện tìm kiếm tên miền www.example.com (hợp lệ ban đầu)",
+      "command": "sudo docker exec user-10.2.6.5 dig www.example.com"
+    },
+    {
+      "key": "step13_dig_example_direct",
+      "name": "[Mục 4.1] Trên máy User truy vấn www.example.com trực tiếp tới máy chủ Attacker Server",
+      "command": "sudo docker exec user-10.2.6.5 dig @ns.attacker32.com www.example.com"
+    },
+    {
+      "key": "step42_gen_query",
+      "name": "[Mục 4.2] Thực thi gen_query.py trên máy Attacker sinh file ip_req.bin",
+      "command": "sudo docker exec attacker-10.2.6.1 bash -c 'cd /attack && python3 gen_query.py && ls -la ip_req.bin'"
+    },
+    {
+      "key": "step43_gen_response",
+      "name": "[Mục 4.3] Thực thi gen_response.py trên máy Attacker sinh file ip_resp.bin",
+      "command": "sudo docker exec attacker-10.2.6.1 bash -c 'cd /attack && python3 gen_response.py 108.162.192.162 && ls -la ip_resp.bin'"
+    },
+    {
+      "key": "step44_compile_attack",
+      "name": "[Mục 4.4] Biên dịch mã nguồn tấn công attack.c dạng static trên máy Host",
+      "command": "cd ~/lab03/attack && gcc -O2 -static attack.c -o attack && chmod +x attack && ls -la attack"
+    },
+    {
+      "key": "step44_flush_cache",
+      "name": "[Mục 4.4] Xóa sạch cache cũ trên Local DNS Server trước tấn công",
+      "command": "sudo docker exec local-dns-server-10.2.6.53 rndc flush"
+    },
+    {
+      "key": "step44_start_tcpdump",
+      "name": "[Mục 4.4] Bắt gói tin trên Attacker và Local DNS Server",
+      "command": "sudo docker exec -d attacker-10.2.6.1 tcpdump -i eth0 -n -w /attack/attacker.pcap; sudo docker exec -d local-dns-server-10.2.6.53 tcpdump -i eth0 -n -w /var/cache/bind/local_dns_server.pcap"
+    },
+    {
+      "key": "step44_exec_attack",
+      "name": "[Mục 4.4] Kích hoạt tấn công Kaminsky DNS Cache Poisoning trong 8 giây",
+      "command": "sudo docker exec attacker-10.2.6.1 bash -c 'cd /attack && timeout 8 ./attack || true'"
+    },
+    {
+      "key": "step44_dig_poisoned",
+      "name": "[Mục 4.4] Kiểm tra truy vấn www.example.com từ máy User sau tấn công",
+      "command": "sudo docker exec user-10.2.6.5 dig www.example.com"
+    },
+    {
+      "key": "step44_dump_cache",
+      "name": "[Mục 4.4] Trích xuất bộ đệm dịch vụ dump.db trên Local DNS Server",
+      "command": "sudo docker exec local-dns-server-10.2.6.53 rndc dumpdb -cache; sudo docker exec local-dns-server-10.2.6.53 grep -A 4 -B 1 'attacker32' /var/cache/bind/dump.db"
+    },
+    {
+      "key": "step44_stop_tcpdump",
+      "name": "[Mục 4.4] Dừng bắt gói tin và thu thập file pcap",
+      "command": "sudo docker exec attacker-10.2.6.1 pkill -INT -x tcpdump 2>/dev/null || true; sudo docker exec local-dns-server-10.2.6.53 pkill -INT -x tcpdump 2>/dev/null || true; sudo docker cp local-dns-server-10.2.6.53:/var/cache/bind/local_dns_server.pcap ~/lab03/ 2>/dev/null || true; cp ~/lab03/attack/attacker.pcap ~/lab03/ 2>/dev/null || true; ls -lh ~/lab03/*.pcap"
+    },
+    {
+      "key": "step45_defense_config",
+      "name": "[Mục 4.5] Xóa cấu hình cổng cố định 44444 để bật Source Port Randomization",
+      "command": "sudo docker exec local-dns-server-10.2.6.53 sed -i '/query-source port 44444;/d' /etc/bind/named.conf.options && sudo docker restart local-dns-server-10.2.6.53 && sudo docker exec local-dns-server-10.2.6.53 rndc flush"
+    },
+    {
+      "key": "step45_defense_verify",
+      "name": "[Mục 4.5] Kiểm tra lại truy vấn www.example.com sau khi phòng thủ",
+      "command": "sudo docker exec user-10.2.6.5 dig www.example.com"
+    },
+    {
+      "key": "pack_deliverable",
+      "name": "Đóng gói kết quả bài nộp thành file zip theo định dạng nhóm",
+      "command": "cd ~/lab03 && zip -q Nhom6_Lab03_BaoCao.zip attacker.pcap local_dns_server.pcap && ls -lh Nhom6_Lab03_BaoCao.zip"
+    }
+  ]
+}
+
