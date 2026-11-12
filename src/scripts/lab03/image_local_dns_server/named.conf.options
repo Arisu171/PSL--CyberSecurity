@@ -3,9 +3,11 @@ options {
 
 	// dnssec-validation auto;
 	dnssec-validation no;
-	dnssec-enable no;
 	dump-file "/var/cache/bind/dump.db";
 	query-source port 44444;
+	// Tat DNS Cookie de goi Response gia mao (khong co cookie) van duoc chap nhan
+	send-cookie no;
+	require-server-cookie no;
 
 	// Access control
 	allow-query { any; };

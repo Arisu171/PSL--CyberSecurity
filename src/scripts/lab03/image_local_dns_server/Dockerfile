@@ -1,7 +1,9 @@
 FROM handsonsecurity/seed-server:bind
 
-# Copy the configuration file for the local DNS server
 COPY named.conf           /etc/bind/
 COPY named.conf.options   /etc/bind/
 
-CMD service named start && tail -f /dev/null 
+RUN chmod 644 /etc/bind/named.conf /etc/bind/named.conf.options \
+    && chown root:bind /etc/bind/named.conf /etc/bind/named.conf.options
+
+CMD service named start && tail -f /dev/null

