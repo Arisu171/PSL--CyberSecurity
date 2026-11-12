@@ -15,18 +15,31 @@ Thư mục dự án trên máy ảo (VirtualBox shared folder / junction tới `
 Các script tự động (khai báo biến đầu file, dùng file trong dự án, không gọi script tạo sẵn trên `~/lab03`):
 
 ```bash
+ssh orias@192.168.117.13
+```
+
+```bash
 bash /media/sf_.shared/scripts/lab03/.lab/00_init.sh
 bash /media/sf_.shared/scripts/lab03/.lab/01_gen_query.sh
 bash /media/sf_.shared/scripts/lab03/.lab/02_gen_response.sh
 bash /media/sf_.shared/scripts/lab03/.lab/03_test_attack.sh
 bash /media/sf_.shared/scripts/lab03/.lab/04_test_defense.sh
+# Ket thuc demo Lab 03, giai subnet cho Lab 02:
+bash /media/sf_.shared/scripts/lab03/.lab/99_down.sh
+```
+
+Chuyển nhanh Lab 02 → Lab 03:
+
+```bash
+bash /media/sf_.shared/scripts/lab02/.lab/99_down.sh
+bash /media/sf_.shared/scripts/lab03/.lab/00_init.sh
 ```
 
 ---
 
 ## GIAI ĐOẠN 0: DỰNG MÔI TRƯỜNG
 
-Lab 03 dùng subnet `10.2.6.0/24` (trùng Lab 02). Tắt Lab 02 trước. Xóa default route Host qua `192.168.117.2` nếu có, để container DNS ra Internet qua NIC còn lại.
+Lab 03 dùng subnet `10.2.6.0/24` (trùng Lab 02). **Không chạy Lab 02 và Lab 03 cùng lúc** — dùng `99_down.sh` khi kết thúc demo, hoặc `00_init.sh` sẽ `docker compose down` lab kia trước. Xóa default route Host qua `192.168.117.2` nếu có, để container DNS ra Internet qua NIC còn lại.
 
 ```bash
 sudo ip route del default via 192.168.117.2 2>/dev/null || true

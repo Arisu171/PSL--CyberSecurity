@@ -10,6 +10,8 @@ bash /media/sf_.shared/scripts/lab02/.lab/01_scenario1.sh
 bash /media/sf_.shared/scripts/lab02/.lab/02_scenario2.sh
 bash /media/sf_.shared/scripts/lab02/.lab/03_scenario3.sh
 bash /media/sf_.shared/scripts/lab02/.lab/04_fix_server.sh
+# Ket thuc demo Lab 02, giai subnet cho Lab 03:
+bash /media/sf_.shared/scripts/lab02/.lab/99_down.sh
 ```
 
 ---

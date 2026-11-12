@@ -46,10 +46,19 @@ note() { printf '\n===== %s =====\n' "$1"; }
 pass() { echo "PASS: $1"; }
 bad() { echo "FAIL: $1"; fail=1; }
 
+LAB03_COMPOSE="/media/sf_.shared/scripts/lab03/docker-compose.yml"
+
 if [[ ! -f "$COMPOSE_FILE" ]]; then
   echo "Khong thay compose cua du an: $COMPOSE_FILE"
   exit 1
 fi
+
+note "Tat Lab 03 neu dang chiem subnet 10.2.6.0/24"
+if [[ -f "$LAB03_COMPOSE" ]]; then
+  sudo docker compose -f "$LAB03_COMPOSE" --project-directory "$(dirname "$LAB03_COMPOSE")" down 2>/dev/null || true
+fi
+sudo docker network rm seed-net 2>/dev/null || true
+sudo docker network rm net-10.2.6.0 2>/dev/null || true
 
 note "Khoi dong container tu du an"
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" up -d

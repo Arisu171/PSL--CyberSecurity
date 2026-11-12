@@ -59,6 +59,8 @@ note "Tat Lab 02 neu dang chiem subnet 10.2.6.0/24"
 if [[ -f "$LAB02_COMPOSE" ]]; then
   sudo docker compose -f "$LAB02_COMPOSE" --project-directory "$(dirname "$LAB02_COMPOSE")" down 2>/dev/null || true
 fi
+sudo docker network rm net-10.2.6.0 2>/dev/null || true
+sudo docker network rm seed-net 2>/dev/null || true
 
 note "Build Local DNS (neu can) va khoi dong Lab 03 tu du an"
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" build local-server
