@@ -5,7 +5,11 @@
     "subtitle": "PHÂN TÍCH MỘT SỐ KỸ THUẬT THĂM DÒ MẠNG",
     "student": {
       "name": "Nguyễn Bảo Long",
-      "id": "223001756"
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "192.168.117.0/24 (Host-Only Network)"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab01.docx"
   },

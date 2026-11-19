@@ -1,0 +1,17 @@
+
+  [WARNING]: Test DEB-0001 had a long execution: 35.048943 seconds
+
+grep: /etc/kernel-img.conf: No such file or directory
+
+  [WARNING]: Test KRNL-5788 had a long execution: 13.363258 seconds
+
+
+  [WARNING]: Test PKGS-7390 had a long execution: 10.529220 seconds
+
+
+  [WARNING]: Test PKGS-7392 had a long execution: 23.567296 seconds
+
+Error sending rule list data request (Operation not permitted)
+
+  [WARNING]: Test CRYP-7902 had a long execution: 23.241371 seconds
+

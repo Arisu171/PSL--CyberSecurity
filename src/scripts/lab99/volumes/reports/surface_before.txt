@@ -1,0 +1,31 @@
+===== SURFACE ASSESSMENT (before) target=10.2.99.10 =====
+--- ping ---
+PING 10.2.99.10 (10.2.99.10) 56(84) bytes of data.
+64 bytes from 10.2.99.10: icmp_seq=1 ttl=64 time=0.290 ms
+64 bytes from 10.2.99.10: icmp_seq=2 ttl=64 time=0.113 ms
+
+--- 10.2.99.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1053ms
+rtt min/avg/max/mdev = 0.113/0.201/0.290/0.088 ms
+--- nmap top ports + light service detect (inventory, lab-owned) ---
+Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 15:52 UTC
+Nmap scan report for lab99_target.lab99-net (10.2.99.10)
+Host is up (0.00086s latency).
+Not shown: 49 closed ports
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.18 (Ubuntu Linux; protocol 2.0)
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 1.76 seconds
+--- ssh banner / auth methods port 22 ---
+Connection to 10.2.99.10 22 port [tcp/*] succeeded!
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+Warning: Permanently added '10.2.99.10' (ED25519) to the list of known hosts.
+labuser@10.2.99.10: Permission denied (publickey,password).
+--- ssh banner / auth methods port 2222 ---
+nc: connect to 10.2.99.10 port 2222 (tcp) failed: Connection refused
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+ssh: connect to host 10.2.99.10 port 2222: Connection refused
+--- chua co key /volumes/lab99_id_ed25519 (sau harden moi co) ---
+===== END SURFACE before =====

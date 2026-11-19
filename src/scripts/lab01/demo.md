@@ -1,11 +1,41 @@
 # Demo trực tiếp – Bài thực hành số 1: Phân tích kỹ thuật do thám hệ thống
 
+## 1. Kết nối SSH từ máy Windows lên máy Attack / Server
+```bash
+# Kết nối SSH vào máy thực thi (máy Attack: 192.168.117.10 hoặc Server: 192.168.117.13)
+ssh orias@192.168.117.10
+```
+
+## 2. Di chuyển vào thư mục bài Lab
+```bash
+cd /media/sf_.shared/scripts/lab01
+```
+
+## 3. Chạy tự động trọn gói (Quick Run qua .lab/)
+```bash
+# Khởi tạo và kiểm tra môi trường, nmap, tcpdump
+bash .lab/00_init.sh
+
+# Kịch bản 1: Quét ARP Ping Scan (nmap -sn) & phân tích task1.pcap
+bash .lab/01_scenario1.sh
+
+# Kịch bản 2: Quét TCP SYN Scan (nmap -sS -F) & phân tích task2.pcap
+bash .lab/02_scenario2.sh
+
+# Kịch bản 3: Quét TCP ACK Scan (nmap -sA -F) & phân tích task3.pcap
+bash .lab/03_scenario3.sh
+
+# Kịch bản 4: Quét Mail Server, OS và Service version & phân tích task4.pcap
+bash .lab/04_scenario4.sh
+
+# Dọn dẹp tiến trình và đóng Lab 01
+bash .lab/99_down.sh
+```
+
+---
+
 Thực hiện trên **máy Attack** (192.168.117.10), mục tiêu quét là **máy Server** (192.168.117.13).
 Card mạng: `enp0s3`. Mỗi bước chỉ gõ **một lệnh hoặc một cụm lệnh**, chạy xong rồi mới sang bước kế tiếp.
-
-```bash
-sudo nmap -sV 192.168.100.20
-```
 
 ---
 

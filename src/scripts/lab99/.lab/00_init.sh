@@ -49,9 +49,19 @@ for container in "${CONTAINERS[@]}"; do
 done
 
 note "Ping Assessor -> Target"
-ping_out="$(sudo docker exec "$CONTAINER_ASSESSOR" ping -c "$PING_COUNT" -W "$PING_WAIT" "$IP_TARGET" || true)"
-echo "$ping_out"
-grep -F -q "$LOSS_NONE" <<<"$ping_out" && pass "Ping ${IP_TARGET}" || bad "Ping target that bai"
+if sudo docker exec "$CONTAINER_ASSESSOR" which ping >/dev/null 2>&1; then
+  ping_out="$(sudo docker exec "$CONTAINER_ASSESSOR" ping -c "$PING_COUNT" -W "$PING_WAIT" "$IP_TARGET" || true)"
+  echo "$ping_out"
+  grep -F -q "$LOSS_NONE" <<<"$ping_out" && pass "Ping ${IP_TARGET}" || bad "Ping target that bai"
+else
+  nc_out="$(sudo docker exec "$CONTAINER_ASSESSOR" nc -z -v -w 2 "$IP_TARGET" 22 2>&1 || true)"
+  echo "$nc_out"
+  if grep -qiE "succeeded|open" <<<"$nc_out"; then
+    pass "Ket noi ${IP_TARGET}:22 thanh cong"
+  else
+    bad "Ket noi target that bai"
+  fi
+fi
 
 note "SSH target dang lang nghe (baseline: cong 22)"
 ss_out="$(sudo docker exec "$CONTAINER_TARGET" ss -lnt | grep -E ':22|:2222' || true)"

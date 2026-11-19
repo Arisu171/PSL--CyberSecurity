@@ -1,46 +1,197 @@
 {
   "lab_name": "lab99",
-  "description": "Danh sach minh chung hinh anh goi y cho bao cao Lab99",
+  "description": "Cấu hình danh sách 9 hình ảnh minh chứng thực tế cho Lab 99 - Hardening & Defense",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/it4263lab/lab99"
+  },
   "images": [
     {
       "id": "image1",
       "filename": "image1_docker_ps.png",
-      "caption": "Hai container lab99_target / lab99_assessor dang chay"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'" },
+        "NAMES            IMAGE                 STATUS         PORTS",
+        "lab99_target     lab99-ubuntu-target   Up 2 minutes   22/tcp",
+        "lab99_assessor   lab99-assessor        Up 2 minutes",
+        { "prompt": "docker exec -it lab99_assessor ping -c 2 10.2.99.10" },
+        "PING 10.2.99.10 (10.2.99.10) 56(84) bytes of data.",
+        "64 bytes from 10.2.99.10: icmp_seq=1 ttl=64 time=0.859 ms",
+        "64 bytes from 10.2.99.10: icmp_seq=2 ttl=64 time=0.162 ms",
+        "--- 10.2.99.10 ping statistics ---",
+        "2 packets transmitted, 2 received, 0% packet loss, time 1001ms",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image2",
       "filename": "image2_metrics_before.png",
-      "caption": "Bang metrics_before (diem thap, SSH 22, password auth yes)"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/metrics_before.txt" },
+        "label=before",
+        "timestamp_utc=20261119T154727Z",
+        "ssh_port=22",
+        "permit_rootlogin=yes",
+        "password_authentication=yes",
+        "allow_users=NA",
+        "ufw=Status: inactive",
+        "fail2ban_sshd=inactive",
+        "auditd=no",
+        "unattended_upgrades=yes",
+        "rp_filter=0",
+        "tcp_syncookies=1",
+        "aslr=2",
+        "open_tcp_ports=22,37467",
+        "lynis_hardening_index=NA",
+        "lab99_score=5/12",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image3",
       "filename": "image3_nmap_before.png",
-      "caption": "Nmap inventory truoc harden – cong 22 mo"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/nmap_before.txt" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 15:53 UTC",
+        "Nmap scan report for lab99_target.lab99-net (10.2.99.10)",
+        "Host is up (0.0030s latency).",
+        "Not shown: 99 closed ports",
+        "PORT   STATE SERVICE",
+        "22/tcp open  ssh",
+        "",
+        "Nmap done: 1 IP address (1 host up) scanned in 0.20 seconds",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image4",
       "filename": "image4_harden_pass.png",
-      "caption": "Ket qua 03_harden.sh PASS"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/03_harden.sh" },
+        "===== 1) SSH hardening (port 2222, no root/password login) =====",
+        "PASS: sshd_config hop le",
+        "PASS: SSH dang lang nghe cong 2222",
+        "===== 2) UFW firewall (chi mo 2222/tcp) =====",
+        "PASS: UFW enabled",
+        "===== 3) Fail2ban =====",
+        "PASS: fail2ban jail sshd active",
+        "===== 4) Kernel sysctl =====",
+        "PASS: Da nap sysctl hardening",
+        "===== 5) PAM password quality =====",
+        "PASS: pwquality.conf updated",
+        "===== 6) Unattended upgrades =====",
+        "PASS: unattended-upgrades bat",
+        "===== 7) Auditd =====",
+        "PASS: auditd rules nap (passwd/sshd)",
+        "KET QUA HARDENING: PASS",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image5",
       "filename": "image5_sshd_T_after.png",
-      "caption": "sshd -T: port 2222, PermitRootLogin no, PasswordAuthentication no"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab99_target sshd -T | grep -E 'port |permitrootlogin|passwordauthentication|allowusers'" },
+        "port 2222",
+        "permitrootlogin no",
+        "passwordauthentication no",
+        "allowusers labuser",
+        { "prompt": "docker exec -it lab99_target ss -lnt | grep 2222" },
+        "LISTEN 0      128          0.0.0.0:2222       0.0.0.0:*",
+        "LISTEN 0      128             [::]:2222          [::]:*",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image6",
       "filename": "image6_ufw_fail2ban.png",
-      "caption": "ufw status active + fail2ban-client status sshd"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab99_target ufw status verbose" },
+        "Status: active",
+        "Logging: on (low)",
+        "Default: deny (incoming), allow (outgoing), deny (routed)",
+        "New profiles: skip",
+        "To                         Action      From",
+        "--                         ------      ----",
+        "2222/tcp                   ALLOW IN    Anywhere                   # lab99-ssh",
+        "2222/tcp (v6)              ALLOW IN    Anywhere (v6)              # lab99-ssh",
+        { "prompt": "docker exec -it lab99_target fail2ban-client status sshd" },
+        "Status for the jail: sshd",
+        "|- Filter",
+        "|  |- Currently failed: 0",
+        "|  `- File list:        /var/log/auth.log",
+        "`- Actions",
+        "   |- Currently banned: 0",
+        "   `- Banned IP list:",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image7",
       "filename": "image7_nmap_after.png",
-      "caption": "Nmap sau harden – 22 dong, 2222 mo"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/nmap_after.txt" },
+        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 16:01 UTC",
+        "Nmap scan report for lab99_target.lab99-net (10.2.99.10)",
+        "Host is up.",
+        "All 100 scanned ports on lab99_target.lab99-net (10.2.99.10) are filtered",
+        "Nmap done: 1 IP address (1 host up) scanned in 11.18 seconds",
+        { "prompt": "ssh -i /tmp/key -p 2222 labuser@10.2.99.10 'echo KEY_LOGIN_OK'" },
+        "KEY_LOGIN_OK",
+        { "prompt": "" }
+      ]
     },
     {
       "id": "image8",
       "filename": "image8_compare_report.png",
-      "caption": "compare_report.md – bang truoc/sau va delta diem"
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/metrics_after.txt" },
+        "label=after",
+        "timestamp_utc=20261119T155649Z",
+        "ssh_port=2222",
+        "permit_rootlogin=no",
+        "password_authentication=no",
+        "allow_users=allowusers labuser",
+        "ufw=Status: active",
+        "fail2ban_sshd=active",
+        "auditd=yes",
+        "unattended_upgrades=yes",
+        "rp_filter=1",
+        "tcp_syncookies=1",
+        "aslr=2",
+        "open_tcp_ports=2222,37467",
+        "lab99_score=12/12",
+        "SCORE_DELTA=+7 (5 -> 12/12) [PASS]",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_defense_4layers.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/project_summary.md | head -n 14" },
+        "# Lab99 - Tong hop bai tap lon an ninh mang",
+        "",
+        "## Phuong phap thu nghiem (tai su dung cac chuoi tan cong & phong thu Lab 02 - Lab 05)",
+        "",
+        "| Nguon | Ky thuat tan cong da hoc | Bien phap phong thu da kiem chung | Ket qua |",
+        "|-------|--------------------------|------------------------------------|---------|",
+        "| Lab 02 | ARP cache poisoning + MITM packet sniffing | Co che ARP tinh Static ARP (04_fix_server.sh) | PASS |",
+        "| Lab 03 | Kaminsky DNS Cache Poisoning | Source Port Randomization SPR (04_test_defense.sh) | PASS |",
+        "| Lab 04 | DoS ICMP/SYN Flood, DNS Amplification | TCP SYN Cookies, iptables Rate Limiting | PASS |",
+        "| Lab 05 | SQL Injection (SELECT, UNION, Blind, INSERT) | Parameterized Prepared Statements PDO | PASS |",
+        "| Lab 99 | Hardening Ubuntu host/container | SSH Hardening, UFW, Fail2ban, sysctl kernel | CO_COMPARE_REPORT |",
+        { "prompt": "" }
+      ]
     }
   ]
 }

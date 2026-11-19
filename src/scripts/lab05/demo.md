@@ -1,17 +1,31 @@
 # HƯỚNG DẪN THỰC HÀNH VÀ DEMO LAB 05 – SQL INJECTION
 
+## 1. Kết nối SSH từ máy Windows lên Ubuntu Server
 ```bash
 ssh orias@192.168.117.13
 ```
 
-Chạy toàn bộ tự động qua các script trong thư mục `.lab`:
+## 2. Di chuyển vào thư mục bài Lab trên Server
+```bash
+cd /media/sf_.shared/scripts/lab05
+```
 
+## 3. Chạy tự động qua các script trong thư mục `.lab`:
+```bash
+bash .lab/00_init.sh
+bash .lab/01_example1_select.sh
+bash .lab/02_example2_insert.sh
+bash .lab/03_test_defense.sh
+# Kết thúc demo Lab 05, giải phóng subnet:
+bash .lab/99_down.sh
+```
+
+*(Hoặc chạy trực tiếp từ bất kỳ đâu bằng đường dẫn tuyệt đối):*
 ```bash
 bash /media/sf_.shared/scripts/lab05/.lab/00_init.sh
 bash /media/sf_.shared/scripts/lab05/.lab/01_example1_select.sh
 bash /media/sf_.shared/scripts/lab05/.lab/02_example2_insert.sh
 bash /media/sf_.shared/scripts/lab05/.lab/03_test_defense.sh
-# Kết thúc demo Lab 05, giải phóng subnet:
 bash /media/sf_.shared/scripts/lab05/.lab/99_down.sh
 ```
 

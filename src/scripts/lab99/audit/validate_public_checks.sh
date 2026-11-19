@@ -104,12 +104,16 @@ ssh_auth_line() {
 
   echo "### T5 Key login sau harden (neu co key)"
   if [[ "$PHASE" == "after" && -f "$KEY" ]]; then
-    if ssh -i "$KEY" -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
+    tmp_key="/tmp/lab99_key_test"
+    cp "$KEY" "$tmp_key" 2>/dev/null || true
+    chmod 600 "$tmp_key" 2>/dev/null || true
+    if ssh -i "$tmp_key" -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 \
       -p 2222 "labuser@${TARGET_IP}" 'echo KEY_LOGIN_OK' 2>/dev/null | grep -q KEY_LOGIN_OK; then
       ok "Admin hop le van SSH bang key cong 2222"
     else
       bad "Key login 2222 that bai"
     fi
+    rm -f "$tmp_key"
   else
     skip "Bo qua key login (phase=before hoac chua co key)"
   fi

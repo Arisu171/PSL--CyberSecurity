@@ -21,10 +21,11 @@ HOST_BAD_DEFAULT="192.168.117.2"
 WAIT_BOOT="4"
 NAME_FORMAT='{{.Names}}'
 PS_FORMAT='table {{.Names}}\t{{.Status}}\t{{.Image}}'
+fail=0
 
 note() { printf '\n===== %s =====\n' "$1"; }
 pass() { echo "PASS: $1"; }
-bad() { echo "FAIL: $1"; exit 1; }
+bad() { echo "FAIL: $1"; fail=1; }
 
 if [[ ! -f "$COMPOSE_FILE" ]]; then
   echo "Khong tim thay compose file: $COMPOSE_FILE"
@@ -74,4 +75,10 @@ else
   bad "Khong the truy cap http://${IP_WEB}/sqli/sqli1.html"
 fi
 
-echo -e "\n[✓] KHOI TAO LAB 05 (SQL INJECTION) THANH CONG!"
+echo
+if [[ "$fail" -eq 0 ]]; then
+  echo "KET QUA KHOI TAO LAB 05: PASS"
+else
+  echo "KET QUA KHOI TAO LAB 05: FAIL"
+fi
+exit "$fail"

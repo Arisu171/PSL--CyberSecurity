@@ -23,10 +23,11 @@ HOST_BAD_DEFAULT="192.168.117.2"
 WAIT_BOOT="4"
 NAME_FORMAT='{{.Names}}'
 PS_FORMAT='table {{.Names}}\t{{.Status}}\t{{.Image}}'
+fail=0
 
 note() { printf '\n===== %s =====\n' "$1"; }
 pass() { echo "PASS: $1"; }
-bad() { echo "FAIL: $1"; exit 1; }
+bad() { echo "FAIL: $1"; fail=1; }
 
 if [[ ! -f "$COMPOSE_FILE" ]]; then
   echo "Khong tim thay compose file: $COMPOSE_FILE"
@@ -39,6 +40,7 @@ sudo ip route del default via "$HOST_BAD_DEFAULT" 2>/dev/null || true
 note "Don dep cac bai lab cu neu dang chiem subnet 10.2.6.0/24"
 for old_compose in "/media/sf_.shared/scripts/lab02/docker-compose.yml" \
                    "/media/sf_.shared/scripts/lab03/docker-compose.yml" \
+                   "/media/sf_.shared/scripts/lab05/docker-compose.yml" \
                    "/media/sf_.shared/scripts/lab99/docker-compose.yml"; do
   if [[ -f "$old_compose" ]]; then
     sudo docker compose -f "$old_compose" down 2>/dev/null || true
@@ -68,9 +70,23 @@ sudo docker exec -d "$CONTAINER_VICTIM" python3 /attack/telnetd.py
 sleep 1
 
 note "Kiem tra ket noi ping giua cac may"
-sudo docker exec "$CONTAINER_USER" ping -c 2 "$IP_VICTIM" && pass "User -> Victim OK" || bad "User -> Victim FAIL"
-sudo docker exec "$CONTAINER_USER" ping -c 2 "$IP_ATTACKER" && pass "User -> Attacker OK" || bad "User -> Attacker FAIL"
-sudo docker exec "$CONTAINER_USER" ping -c 2 "$IP_DNS" && pass "User -> DNS OK" || bad "User -> DNS FAIL"
+if sudo docker exec "$CONTAINER_USER" ping -c 2 -W 1 "$IP_VICTIM" >/dev/null 2>&1; then
+  pass "User -> Victim OK"
+else
+  bad "User -> Victim FAIL"
+fi
+
+if sudo docker exec "$CONTAINER_USER" ping -c 2 -W 1 "$IP_ATTACKER" >/dev/null 2>&1; then
+  pass "User -> Attacker OK"
+else
+  bad "User -> Attacker FAIL"
+fi
+
+if sudo docker exec "$CONTAINER_USER" ping -c 2 -W 1 "$IP_DNS" >/dev/null 2>&1; then
+  pass "User -> DNS OK"
+else
+  bad "User -> DNS FAIL"
+fi
 
 note "Kiem tra ket noi Telnet ban dau tu User den Victim"
 if sudo docker exec "$CONTAINER_USER" nc -z -w 2 "$IP_VICTIM" 23; then
@@ -79,4 +95,10 @@ else
   bad "Khong the ket noi toi port 23 cua Victim"
 fi
 
-echo -e "\n[✓] KHOI TAO LAB 04 THANH CONG!"
+echo
+if [[ "$fail" -eq 0 ]]; then
+  echo "KET QUA KHOI TAO LAB 04: PASS"
+else
+  echo "KET QUA KHOI TAO LAB 04: FAIL"
+fi
+exit "$fail"

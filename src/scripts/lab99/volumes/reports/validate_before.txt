@@ -1,0 +1,34 @@
+===== VALIDATE PUBLIC CHECKS (before) target=10.2.99.10 =====
+Tham chieu: /audit/techniques_map.md
+
+### T1 Nmap inventory (cong cu cong khai)
+Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 15:53 UTC
+Nmap scan report for lab99_target.lab99-net (10.2.99.10)
+Host is up (0.0030s latency).
+Not shown: 99 closed ports
+PORT   STATE SERVICE
+22/tcp open  ssh
+
+Nmap done: 1 IP address (1 host up) scanned in 0.20 seconds
+(chi tiet: nmap_before.txt)
+
+### T2 Be mat cong 22 vs 2222
+[PASS] Truoc harden: TCP/22 mo (ky vong baseline)
+[PASS] Truoc harden: TCP/2222 chua mo
+
+### T3 SSH auth method probe (khong gui mat khau)
+probe:22 => Pseudo-terminal will not be allocated because stdin is not a terminal. labuser@10.2.99.10: Permission denied (publickey,password). 
+probe:2222 => Pseudo-terminal will not be allocated because stdin is not a terminal. ssh: connect to host 10.2.99.10 port 2222: Connection refused 
+[PASS] Baseline SSH/22 phan hoi auth (co the password)
+
+### T4 Root login probe
+probe:root => Pseudo-terminal will not be allocated because stdin is not a terminal. root@10.2.99.10: Permission denied (publickey,password). 
+[SKIP] Baseline: root login co the con mo (chi ghi nhan)
+
+### T5 Key login sau harden (neu co key)
+[SKIP] Bo qua key login (phase=before hoac chua co key)
+
+### T6 Dich vu thua (FTP/HTTP/DB) — ky vong khong mo
+[PASS] Khong thay 21/80/443/3306/5432 mo
+
+===== SUMMARY before: PASS=4 FAIL=0 SKIP=2 =====

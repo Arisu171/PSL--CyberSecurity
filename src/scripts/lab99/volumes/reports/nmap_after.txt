@@ -1,0 +1,6 @@
+# Nmap 7.80 scan initiated Thu Nov 19 16:01:24 2026 as: nmap -Pn -sT --top-ports 100 -T4 -oN /volumes/reports/nmap_after.txt 10.2.99.10
+Nmap scan report for lab99_target.lab99-net (10.2.99.10)
+Host is up.
+All 100 scanned ports on lab99_target.lab99-net (10.2.99.10) are filtered
+
+# Nmap done at Thu Nov 19 16:01:35 2026 -- 1 IP address (1 host up) scanned in 11.18 seconds

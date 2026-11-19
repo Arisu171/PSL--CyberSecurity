@@ -1,16 +1,33 @@
-# HƯỚNG DẪN DEMO
+# HƯỚNG DẪN THỰC HÀNH VÀ DEMO LAB 02 – ARP SPOOFING
 
+## 1. Kết nối SSH từ máy Windows lên Ubuntu Server
 ```bash
 ssh orias@192.168.117.13
 ```
 
+## 2. Di chuyển vào thư mục bài Lab trên Server
+```bash
+cd /media/sf_.shared/scripts/lab02
+```
+
+## 3. Chạy tự động qua các script trong thư mục `.lab`:
+```bash
+bash .lab/00_init.sh
+bash .lab/01_scenario1.sh
+bash .lab/02_scenario2.sh
+bash .lab/03_scenario3.sh
+bash .lab/04_fix_server.sh
+# Kết thúc demo Lab 02, giải phóng subnet:
+bash .lab/99_down.sh
+```
+
+*(Hoặc chạy trực tiếp từ bất kỳ đâu bằng đường dẫn tuyệt đối):*
 ```bash
 bash /media/sf_.shared/scripts/lab02/.lab/00_init.sh
 bash /media/sf_.shared/scripts/lab02/.lab/01_scenario1.sh
 bash /media/sf_.shared/scripts/lab02/.lab/02_scenario2.sh
 bash /media/sf_.shared/scripts/lab02/.lab/03_scenario3.sh
 bash /media/sf_.shared/scripts/lab02/.lab/04_fix_server.sh
-# Ket thuc demo Lab 02, giai subnet cho Lab 03:
 bash /media/sf_.shared/scripts/lab02/.lab/99_down.sh
 ```
 
@@ -21,7 +38,7 @@ bash /media/sf_.shared/scripts/lab02/.lab/99_down.sh
 Trước khi chạy các lệnh kiểm tra, bạn cần di chuyển vào thư mục chứa `docker-compose.yml` và khởi động 3 container:
 
 ```bash
-cd ~/it4263lab/lab02
+cd /media/sf_.shared/scripts/lab02
 sudo docker compose up -d
 ```
 

@@ -1,0 +1,35 @@
+===== SURFACE ASSESSMENT (after) target=10.2.99.10 =====
+--- ping ---
+PING 10.2.99.10 (10.2.99.10) 56(84) bytes of data.
+64 bytes from 10.2.99.10: icmp_seq=1 ttl=64 time=0.258 ms
+64 bytes from 10.2.99.10: icmp_seq=2 ttl=64 time=0.085 ms
+
+--- 10.2.99.10 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1006ms
+rtt min/avg/max/mdev = 0.085/0.171/0.258/0.086 ms
+--- nmap top ports + light service detect (inventory, lab-owned) ---
+Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 16:00 UTC
+Nmap scan report for lab99_target.lab99-net (10.2.99.10)
+Host is up.
+All 50 scanned ports on lab99_target.lab99-net (10.2.99.10) are filtered
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 6.99 seconds
+--- ssh banner / auth methods port 22 ---
+nc: connect to 10.2.99.10 port 22 (tcp) timed out: Operation now in progress
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+ssh: connect to host 10.2.99.10 port 22: Connection timed out
+--- ssh banner / auth methods port 2222 ---
+Connection to 10.2.99.10 2222 port [tcp/*] succeeded!
+Pseudo-terminal will not be allocated because stdin is not a terminal.
+labuser@10.2.99.10: Permission denied (publickey).
+--- ssh key login thu cong 2222 ---
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0770 for '/volumes/lab99_id_ed25519' are too open.
+It is required that your private key files are NOT accessible by others.
+This private key will be ignored.
+Load key "/volumes/lab99_id_ed25519": bad permissions
+labuser@10.2.99.10: Permission denied (publickey).
+===== END SURFACE after =====

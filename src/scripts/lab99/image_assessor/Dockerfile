@@ -8,6 +8,7 @@ RUN apt-get update \
         openssh-client \
         netcat-openbsd \
         iproute2 \
+        iputils-ping \
         net-tools \
         python3 \
         ca-certificates \

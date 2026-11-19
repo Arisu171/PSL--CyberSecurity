@@ -20,6 +20,8 @@ services:
     hostname: attacker
     tty: true
     stdin_open: true
+    volumes:
+      - ./attack:/attack
     networks:
       labnet:
         ipv4_address: 10.2.6.51

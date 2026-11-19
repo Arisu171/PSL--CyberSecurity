@@ -1,62 +1,237 @@
 {
   "lab_name": "lab99",
   "metadata": {
-    "title": "BÁO CÁO BÀI TẬP LỚN",
-    "subtitle": "HARDENING UBUNTU SERVER VÀ ĐÁNH GIÁ HIỆU QUẢ TRƯỚC/SAU",
-    "default_output": "bin/docs/Lab99_Hardening_Ubuntu.docx"
+    "title": "BÁO CÁO BÀI TẬP LỚN AN NINH MẠNG",
+    "subtitle": "HARDENING UBUNTU SERVER VÀ ĐÁNH GIÁ NĂNG LỰC PHÒNG THỦ ĐA TẦNG (LAB 02 - LAB 05, LAB 99)",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "10.02.6.0/24 & 10.2.99.0/24"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab99.docx"
   },
   "content": [
     {
       "type": "heading_1",
-      "text": "1. Mục tiêu và phạm vi"
+      "text": "I. MỤC TIÊU VÀ PHẠM VI BÀI TẬP LỚN"
     },
     {
       "type": "paragraph",
-      "text": "Xây dựng môi trường Ubuntu Server lab, đo bề mặt và điểm bảo mật trước hardening; áp dụng các biện pháp (SSH, UFW, Fail2ban, sysctl, PAM, auditd, unattended-upgrades, AppArmor); đo lại và so sánh định lượng."
+      "text": "Bài tập lớn môn An ninh mạng (Lab 99) hướng tới hai mục tiêu cốt lõi: (1) Xây dựng quy trình gia cố an ninh (Hardening) toàn diện cho hệ điều hành Ubuntu Server theo chuẩn thực hành tốt nhất (Best Practices) và đo lường sự thay đổi bề mặt tấn công trước - sau một cách định lượng; (2) Tích hợp và đánh giá năng lực phòng thủ của hệ thống trước 4 kịch bản tấn công mạng kinh điển đã thực nghiệm qua các bài thực hành chuyên đề từ Lab 02 đến Lab 05 (ARP Poisoning, DNS Cache Poisoning, DoS Flood/Amplification, và SQL Injection)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Toàn bộ quá trình thực nghiệm được triển khai khép kín trên hạ tầng mạng ảo hóa Docker kết hợp máy chủ Ubuntu Server (vserver) trên VirtualBox, đảm bảo tính cô lập, an toàn tuyệt đối và có thể tái hiện chính xác kết quả."
     },
     {
       "type": "heading_1",
-      "text": "2. Môi trường thí nghiệm"
+      "text": "II. KIẾN TRÚC MÔ HÌNH THỰC NGHIỆM"
+    },
+    {
+      "type": "paragraph",
+      "text": "Mô hình thí nghiệm Lab 99 được thiết kế độc lập nhằm tránh xung đột tài nguyên với các bài thực hành trước, sử dụng subnet riêng biệt 10.2.99.0/24 bao gồm 2 thực thể container:"
     },
     {
       "type": "bullet",
-      "text": "Docker: lab99_target 10.2.99.10, lab99_assessor 10.2.99.20, subnet 10.2.99.0/24"
+      "text": "lab99_target (10.2.99.10): Máy chủ mục tiêu chạy Ubuntu 22.04 LTS, đóng vai trò hệ thống chịu sự gia cố và thẩm định an toàn thông tin. Ban đầu máy chủ ở trạng thái mặc định (cổng SSH 22 mở, cho phép đăng nhập tài khoản root bằng mật khẩu, tường lửa tắt)."
     },
     {
       "type": "bullet",
-      "text": "Tuỳ chọn: 2 VM VirtualBox (Kali + Ubuntu Server) cho đánh giá thủ công bổ sung"
+      "text": "lab99_assessor (10.2.99.20): Máy kiểm định an ninh trang bị bộ công cụ quét cổng, thăm dò dịch vụ công khai (Nmap, Netcat, OpenSSH client, Python socket) đóng vai trò kẻ tấn công hoặc chuyên viên đánh giá độc lập."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image1_docker_ps.png",
+      "caption": "Hình 1: Trạng thái khởi tạo các container và kiểm tra kết nối mạng nội bộ trên subnet 10.2.99.0/24"
     },
     {
       "type": "heading_1",
-      "text": "3. Kết quả trước hardening"
+      "text": "III. ĐÁNH GIÁ HIỆN TRẠNG TRƯỚC GIA CỐ (BASELINE AUDIT)"
     },
     {
       "type": "paragraph",
-      "text": "Đính kèm metrics_before, surface_before, Lynis (nếu có). Phân tích rủi ro: SSH 22 + password + root login."
+      "text": "Trước khi triển khai các chính sách bảo mật, hệ thống được kích hoạt quy trình kiểm toán điểm an ninh ban đầu và rà soát bề mặt tấn công mạng:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image2_metrics_before.png",
+      "caption": "Hình 2: Bộ chỉ số an toàn ban đầu (metrics_before) đạt 5/12 điểm với nhiều điểm yếu cấu hình nghiêm trọng"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image3_nmap_before.png",
+      "caption": "Hình 3: Kết quả quét Nmap bề mặt trước gia cố ghi nhận cổng 22/tcp mở dịch vụ OpenSSH"
+    },
+    {
+      "type": "paragraph",
+      "text": "Các rủi ro an ninh nổi cộm được nhận diện trong pha Baseline:"
+    },
+    {
+      "type": "bullet",
+      "text": "Cổng quản trị SSH lắng nghe tại cổng mặc định 22/tcp, dễ dàng bị rà quét tự động bởi botnet."
+    },
+    {
+      "type": "bullet",
+      "text": "Cho phép đăng nhập trực tiếp tài khoản root (PermitRootLogin yes) và chứng thực bằng mật khẩu (PasswordAuthentication yes), tiềm ẩn nguy cơ bị dò quét mật khẩu (brute-force / dictionary attack)."
+    },
+    {
+      "type": "bullet",
+      "text": "Tường lửa UFW chưa được kích hoạt; dịch vụ chống tấn công vét cạn Fail2ban và hệ thống giám sát Auditd ở trạng thái không hoạt động."
+    },
+    {
+      "type": "bullet",
+      "text": "Cơ chế bảo vệ chống IP spoofing của nhân Linux (rp_filter) bị vô hiệu hóa (giá trị 0)."
     },
     {
       "type": "heading_1",
-      "text": "4. Biện pháp hardening đã áp dụng"
+      "text": "IV. CÁC BIỆN PHÁP GIA CỐ HỆ THỐNG ĐÃ ÁP DỤNG"
     },
     {
       "type": "paragraph",
-      "text": "Mô tả từng control và cấu hình tương ứng trong hardening/ (sshd drop-in, UFW, fail2ban jail.local, sysctl, pwquality, auditd, unattended-upgrades)."
+      "text": "Hệ thống áp dụng kịch bản gia cố toàn diện (03_harden.sh) thông qua các drop-in configuration chuẩn của Ubuntu:"
+    },
+    {
+      "type": "bullet",
+      "text": "Gia cố OpenSSH (/etc/ssh/sshd_config.d/99-lab99-hardening.conf): Đổi cổng quản trị sang 2222, cấm tuyệt đối root login (PermitRootLogin no), vô hiệu hóa đăng nhập mật khẩu (PasswordAuthentication no), chỉ cho phép đăng nhập qua khóa bất đối xứng ED25519 (PubkeyAuthentication yes) và giới hạn danh sách tài khoản hợp lệ (AllowUsers labuser)."
+    },
+    {
+      "type": "bullet",
+      "text": "Tường lửa UFW: Thiết lập chính sách mặc định chặn toàn bộ lưu lượng vào (Default incoming deny), cho phép lưu lượng ra (Default outgoing allow), và chỉ mở duy nhất cổng TCP 2222 phục vụ quản trị."
+    },
+    {
+      "type": "bullet",
+      "text": "Cơ chế tự động ngăn chặn tấn công Fail2ban (/etc/fail2ban/jail.local): Kích hoạt giám sát jail sshd với cơ chế backend polling giám sát /var/log/auth.log, tự động cô lập địa chỉ IP vi phạm sau 3 lần thử sai."
+    },
+    {
+      "type": "bullet",
+      "text": "Gia cố nhân Linux Sysctl (/etc/sysctl.d/99-lab99-hardening.conf): Bật kiểm tra đường dẫn ngược chống giả mạo IP nguồn (net.ipv4.conf.all.rp_filter = 1), kích hoạt TCP SYN Cookies chống SYN Flood (net.ipv4.tcp_syncookies = 1), và kích hoạt ngẫu nhiên hóa không gian địa chỉ bộ nhớ chống khai thác tràn bộ đệm (kernel.randomize_va_space = 2)."
+    },
+    {
+      "type": "bullet",
+      "text": "Chính sách mật khẩu PAM & Cập nhật tự động: Cấu hình /etc/security/pwquality.conf yêu cầu độ phức tạp mật khẩu cao; kích hoạt unattended-upgrades tự động vá lỗ hổng bảo mật định kỳ."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image4_harden_pass.png",
+      "caption": "Hình 4: Toàn bộ quy trình thực thi kịch bản gia cố 03_harden.sh hoàn thành xuất sắc (PASS)"
     },
     {
       "type": "heading_1",
-      "text": "5. Kết quả sau hardening và so sánh"
+      "text": "V. XÁC MINH VÀ PHÂN TÍCH SO SÁNH HIỆU QUẢ GIA CỐ"
     },
     {
       "type": "paragraph",
-      "text": "Đính kèm compare_report.md, bảng delta điểm lab99 / Lynis, Nmap trước-sau, xác minh key-only SSH cổng 2222."
+      "text": "Sau khi áp dụng gia cố, các bài kiểm tra độc lập từ máy thẩm định lab99_assessor được thực thi nhằm xác thực tính hiệu lực của từng cơ chế phòng thủ:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image5_sshd_T_after.png",
+      "caption": "Hình 5: Xác minh cấu hình OpenSSH hiệu lực thực tế qua lệnh sshd -T (cổng 2222, không root, không password)"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image6_ufw_fail2ban.png",
+      "caption": "Hình 6: Trạng thái kích hoạt của tường lửa UFW và tiến trình Fail2ban giám sát jail sshd"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image7_nmap_after.png",
+      "caption": "Hình 7: Nmap xác nhận cổng 22/tcp đã bị tường lửa lọc (filtered) và chứng thực SSH 2222 thành công với SSH key"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image8_compare_report.png",
+      "caption": "Hình 8: Báo cáo so sánh định lượng điểm an ninh tăng vọt từ 5 lên 12/12 điểm (Tăng +7 điểm tuyệt đối)"
+    },
+    {
+      "type": "heading_2",
+      "text": "Bảng tổng hợp đối chiếu chỉ số an toàn trước và sau gia cố"
+    },
+    {
+      "type": "table",
+      "headers": ["Tiêu chí kiểm định", "Trước Hardening (Baseline)", "Sau Hardening", "Đánh giá an toàn"],
+      "rows": [
+        ["Cổng dịch vụ SSH", "22 (mặc định)", "2222 (tùy chỉnh)", "Tránh các công cụ quét tự động"],
+        ["PermitRootLogin", "yes (nguy hiểm)", "no (an toàn)", "Loại bỏ nguy cơ chiếm quyền root từ xa"],
+        ["PasswordAuthentication", "yes (dễ brute-force)", "no (vô hiệu hóa)", "Chỉ chấp nhận khóa mã hóa ED25519"],
+        ["Danh sách người dùng SSH", "Không giới hạn", "AllowUsers labuser", "Kiểm soát truy cập đặc quyền tối thiểu"],
+        ["Tường lửa UFW", "inactive (tắt)", "active (bật, deny all in)", "Thu hẹp bề mặt tấn công tối đa"],
+        ["Dịch vụ Fail2ban", "inactive", "active (jail sshd)", "Tự động khóa IP vi phạm dò mật khẩu"],
+        ["Giám sát Auditd", "no (không ghi vết)", "yes (ghi vết file trọng yếu)", "Phục vụ điều tra sau sự cố (Forensics)"],
+        ["Vá lỗi tự động", "yes", "yes", "Đảm bảo các bản vá an ninh mới nhất"],
+        ["Chống giả mạo IP (rp_filter)", "0 (tắt)", "1 (chế độ nghiêm ngặt)", "Ngăn chặn các gói tin IP spoofing"],
+        ["Chống SYN Flood (syncookies)", "1", "1", "Bảo vệ hàng đợi kết nối TCP"],
+        ["Ngẫu nhiên hóa bộ nhớ (ASLR)", "2", "2", "Ngăn chặn tấn công khai thác bộ đệm"],
+        ["Tổng điểm bảo mật Lab 99", "5 / 12 điểm", "12 / 12 điểm (100%)", "Đạt chuẩn gia cố an toàn cao nhất"]
+      ]
     },
     {
       "type": "heading_1",
-      "text": "6. Hạn chế và hướng phát triển"
+      "text": "VI. ĐÁNH GIÁ NĂNG LỰC PHÒNG THỦ ĐA TẦNG (LAB 02 - LAB 05)"
     },
     {
       "type": "paragraph",
-      "text": "Container khác bare-metal (AppArmor/auditd/systemd). Hướng mở: Wazuh, OpenSCAP/CIS, Ansible CI."
+      "text": "Nhằm chứng minh năng lực phòng thủ toàn diện của hệ thống trong thực tế, chuỗi các kịch bản tấn công nguy hiểm từ các bài thực hành chuyên đề được phát động để kiểm tra khả năng tự vệ của các lớp bảo mật:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image9_defense_4layers.png",
+      "caption": "Hình 9: Bảng tổng kết kết quả kiểm chứng phòng vệ đa tầng độc lập đạt tỷ lệ PASS 100%"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Lớp 2/3 (Liên kết & Mạng) - Tấn công ARP Spoofing (Lab 02)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kẻ tấn công sử dụng arpspoof giả mạo địa chỉ MAC của Gateway để đánh cắp lưu lượng và thực hiện nghe lén (MITM sniffing). Biện pháp phòng vệ bằng cơ chế gán bảng ARP tĩnh (Static ARP binding qua 04_fix_server.sh) đã hoàn toàn vô hiệu hóa khả năng đầu độc bảng ARP, bảo vệ toàn vẹn luồng dữ liệu truyền tải."
+    },
+    {
+      "type": "heading_2",
+      "text": "2. Lớp dịch vụ hạ tầng - Tấn công Kaminsky DNS Poisoning (Lab 03)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kẻ tấn công gửi hàng nghìn truy vấn tên miền ngẫu nhiên kèm gói tin trả lời DNS giả mạo Transaction ID để đầu độc bộ nhớ đệm máy chủ DNS đệ quy. Biện pháp nâng cấp cơ chế Source Port Randomization (SPR) mở rộng không gian tìm kiếm từ 16-bit (Transaction ID) lên 32-bit (kết hợp Port nguồn ngẫu nhiên), khiến xác suất thành công của kẻ tấn công giảm xuống mức xấp xỉ bằng không."
+    },
+    {
+      "type": "heading_2",
+      "text": "3. Lớp sẵn sàng dịch vụ - Tấn công DoS SYN/ICMP Flood & DNS Amplification (Lab 04)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Máy chủ bị tấn công dồn dập bởi luồng gói tin TCP SYN Flood làm đầy hàng đợi kết nối và luồng phản xạ DNS Amplification khuếch đại lưu lượng gấp hơn 20 lần. Biện pháp kích hoạt TCP SYN Cookies kết hợp quy tắc giới hạn tần số gói tin (iptables rate limiting) trên tường lửa đã giúp máy chủ duy trì trạng thái đáp ứng bình thường cho người dùng hợp lệ mà không bị sập dịch vụ."
+    },
+    {
+      "type": "heading_2",
+      "text": "4. Lớp ứng dụng Web & Cơ sở dữ liệu - Tấn công SQL Injection (Lab 05)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Tin tặc thực hiện chèn các chuỗi truy vấn độc hại (Tautology Bypass, UNION-based dump database, Time-based Blind injection, Stacked Queries INSERT). Biện pháp tái cấu trúc mã nguồn backend sử dụng Parameterized Prepared Statements (PDO) đã tách biệt hoàn toàn giữa cú pháp câu lệnh SQL và giá trị tham số người dùng nhập, triệt tiêu hoàn toàn bề mặt khai thác SQLi."
+    },
+    {
+      "type": "heading_1",
+      "text": "VII. KẾT LUẬN VÀ BÀI HỌC KINH NGHIỆM"
+    },
+    {
+      "type": "paragraph",
+      "text": "Thông qua quá trình triển khai thực tế bài tập lớn Lab 99, sinh viên đã nắm vững nguyên lý thiết lập cơ chế 'Phòng thủ theo chiều sâu' (Defense-in-Depth). Không có một giải pháp đơn lẻ nào có thể bảo vệ an toàn tuyệt đối cho hệ thống, mà cần sự phối hợp chặt chẽ giữa các tầng:"
+    },
+    {
+      "type": "bullet",
+      "text": "Gia cố bề mặt hệ điều hành (OS Hardening) giúp giảm thiểu tối đa các điểm yếu cấu hình và dịch vụ dư thừa."
+    },
+    {
+      "type": "bullet",
+      "text": "Cơ chế bảo vệ hạ tầng mạng và giao thức truyền thông ngăn chặn kẻ tấn công can thiệp vào đường truyền và gây cạn kiệt tài nguyên."
+    },
+    {
+      "type": "bullet",
+      "text": "Thực hành lập trình an toàn (Secure Coding) tại tầng ứng dụng là lá chắn vững chắc bảo vệ dữ liệu nghiệp vụ của tổ chức."
     }
   ]
 }

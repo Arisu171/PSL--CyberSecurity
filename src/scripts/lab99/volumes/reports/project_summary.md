@@ -8,7 +8,7 @@
 | **Lab 03** | Kaminsky DNS Cache Poisoning | Source Port Randomization SPR (`04_test_defense.sh`) | PASS |
 | **Lab 04** | DoS ICMP/SYN Flood, DNS Amplification | TCP SYN Cookies, iptables Rate Limiting (`04_test_defense.sh`) | PASS |
 | **Lab 05** | SQL Injection (SELECT Tautology, UNION, Blind, INSERT) | Parameterized Prepared Statements PDO (`03_test_defense.sh`) | PASS |
-| **Lab 99** (tuy chon) | Hardening Ubuntu host/container | SSH Hardening, UFW, Fail2ban, sysctl kernel | CHUA_CHAY |
+| **Lab 99** (tuy chon) | Hardening Ubuntu host/container | SSH Hardening, UFW, Fail2ban, sysctl kernel | CO_COMPARE_REPORT |
 
 ## File minh chung chi tiet
 

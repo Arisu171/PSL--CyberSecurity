@@ -1,17 +1,33 @@
 # HƯỚNG DẪN THỰC HÀNH VÀ DEMO LAB 04 – DoS
 
+## 1. Kết nối SSH từ máy Windows lên Ubuntu Server
 ```bash
 ssh orias@192.168.117.13
 ```
 
-Chạy toàn bộ tự động qua các script trong thư mục `.lab`:
+## 2. Di chuyển vào thư mục bài Lab trên Server
+```bash
+cd /media/sf_.shared/scripts/lab04
+```
+
+## 3. Chạy tự động qua các script trong thư mục `.lab`:
+```bash
+bash .lab/00_init.sh
+bash .lab/01_scenario1.sh
+bash .lab/02_scenario2.sh
+bash .lab/03_scenario3.sh
+bash .lab/04_test_defense.sh
+# Kết thúc demo Lab 04, giải phóng subnet:
+bash .lab/99_down.sh
+```
+
+*(Hoặc chạy trực tiếp từ bất kỳ đâu bằng đường dẫn tuyệt đối):*
 ```bash
 bash /media/sf_.shared/scripts/lab04/.lab/00_init.sh
 bash /media/sf_.shared/scripts/lab04/.lab/01_scenario1.sh
 bash /media/sf_.shared/scripts/lab04/.lab/02_scenario2.sh
 bash /media/sf_.shared/scripts/lab04/.lab/03_scenario3.sh
 bash /media/sf_.shared/scripts/lab04/.lab/04_test_defense.sh
-# Kết thúc demo Lab 04, giải phóng subnet:
 bash /media/sf_.shared/scripts/lab04/.lab/99_down.sh
 ```
 
