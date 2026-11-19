@@ -1,0 +1,94 @@
+---
+# Ansible playbook Lab99 – hardening Ubuntu (dung tren VM Ubuntu that hoac target).
+- name: Lab99 Ubuntu hardening
+  hosts: targets
+  become: true
+  vars:
+    ssh_port: 2222
+    allow_user: labuser
+  tasks:
+    - name: Ensure sshd drop-in directory exists
+      file:
+        path: /etc/ssh/sshd_config.d
+        state: directory
+        mode: "0755"
+
+    - name: Deploy SSH hardening drop-in
+      copy:
+        src: ../sshd_hardening.conf
+        dest: /etc/ssh/sshd_config.d/99-lab99-hardening.conf
+        mode: "0644"
+      notify: Restart ssh
+
+    - name: Deploy sysctl hardening
+      copy:
+        src: ../sysctl-hardening.conf
+        dest: /etc/sysctl.d/99-lab99-hardening.conf
+        mode: "0644"
+      notify: Reload sysctl
+
+    - name: Deploy fail2ban jail.local
+      copy:
+        src: ../jail.local
+        dest: /etc/fail2ban/jail.local
+        mode: "0644"
+      notify: Restart fail2ban
+
+    - name: Deploy pwquality
+      copy:
+        src: ../pwquality.conf
+        dest: /etc/security/pwquality.conf
+        mode: "0644"
+
+    - name: Install hardening packages
+      apt:
+        name:
+          - ufw
+          - fail2ban
+          - auditd
+          - unattended-upgrades
+          - libpam-pwquality
+          - lynis
+        state: present
+        update_cache: true
+
+    - name: Enable UFW default policies
+      ufw:
+        direction: "{{ item.direction }}"
+        policy: "{{ item.policy }}"
+      loop:
+        - { direction: incoming, policy: deny }
+        - { direction: outgoing, policy: allow }
+
+    - name: Allow SSH harden port
+      ufw:
+        rule: allow
+        port: "{{ ssh_port }}"
+        proto: tcp
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+
+    - name: Enable unattended upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+          APT::Periodic::AutocleanInterval "7";
+        mode: "0644"
+
+  handlers:
+    - name: Restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+    - name: Reload sysctl
+      command: sysctl --system
+
+    - name: Restart fail2ban
+      service:
+        name: fail2ban
+        state: restarted

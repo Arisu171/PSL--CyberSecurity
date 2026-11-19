@@ -1,0 +1,41 @@
+services:
+  target:
+    build: ./image_target
+    image: lab99-ubuntu-target
+    container_name: lab99_target
+    hostname: ubuntu-target
+    tty: true
+    privileged: true
+    cap_add:
+      - ALL
+    volumes:
+      - ./hardening:/hardening:ro
+      - ./audit:/audit:ro
+      - ./volumes:/volumes
+    networks:
+      lab99-net:
+        ipv4_address: 10.2.99.10
+
+  assessor:
+    build: ./image_assessor
+    image: lab99-assessor
+    container_name: lab99_assessor
+    hostname: assessor
+    tty: true
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    volumes:
+      - ./audit:/audit:ro
+      - ./volumes:/volumes
+    networks:
+      lab99-net:
+        ipv4_address: 10.2.99.20
+
+networks:
+  lab99-net:
+    name: lab99-net
+    ipam:
+      config:
+        - subnet: 10.2.99.0/24
+          gateway: 10.2.99.254

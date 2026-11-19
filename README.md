@@ -24,14 +24,23 @@ PSL--CyberSecurity/
 ├── bin/                                # Thư mục chứa các tệp đầu ra (Artifacts)
 │   ├── docs/                           # Báo cáo Word hoàn chỉnh (.docx)
 │   │   ├── NguyenBaoLong_223001756_Lab01.docx
-│   │   └── NguyenBaoLong_223001756_Lab02.docx
+│   │   ├── NguyenBaoLong_223001756_Lab02.docx
+│   │   ├── NguyenBaoLong_223001756_Lab03.docx
+│   │   ├── NguyenBaoLong_223001756_Lab04.docx
+│   │   └── NguyenBaoLong_223001756_Lab05.docx
 │   ├── imgs/                           # Hình ảnh minh chứng đã xuất bản
 │   │   ├── lab01/                      # 17 ảnh Terminal & Wireshark của Lab 01
-│   │   └── lab02/                      # 15 ảnh Topology, Terminal & Wireshark của Lab 02
+│   │   ├── lab02/                      # 15 ảnh Topology, Terminal & Wireshark của Lab 02
+│   │   ├── lab03/                      # 12 ảnh Topology, Terminal & Wireshark của Lab 03
+│   │   ├── lab04/                      # 15 ảnh Topology, Terminal & Wireshark của Lab 04
+│   │   └── lab05/                      # 15 ảnh Topology, Terminal & Burp/Browser của Lab 05
 │   └── results.json                    # Nhật ký kết quả lệnh thực thi qua SSH
 ├── doc/                                # Tài liệu hướng dẫn gốc của môn học
 │   ├── Lab01_HD.pdf                    # Hướng dẫn Lab 01: Thăm dò mạng
-│   └── Lab02_HD.pdf                    # Hướng dẫn Lab 02: Tấn công ARP Cache Poisoning
+│   ├── Lab02_HD.pdf                    # Hướng dẫn Lab 02: Tấn công ARP Cache Poisoning
+│   ├── Lab03_HD.pdf                    # Hướng dẫn Lab 03: Tấn công DNS Cache Poisoning
+│   ├── Lab04_HD.pdf                    # Hướng dẫn Lab 04: Tấn công từ chối dịch vụ (DoS)
+│   └── Lab05_HD.pdf                    # Hướng dẫn Lab 05: Kiểm thử lỗ hổng SQL Injection
 ├── src/                                # Mã nguồn dự án
 │   ├── remote/                         # Script tiện ích truy cập nhanh SSH / Docker
 │   │   ├── remote.ps1                  # Menu điều khiển nhanh cho Windows PowerShell
@@ -42,18 +51,10 @@ PSL--CyberSecurity/
 │       ├── genimgs.py                  # Generic Image Generator: Sinh ảnh minh chứng
 │       ├── gendocs.py                  # Generic Docx Generator: Biên dịch báo cáo Word
 │       ├── lab01/                      # Dữ liệu kịch bản bài Lab 01
-│       │   ├── scripts.json            # Danh mục lệnh Nmap & bắt gói tin PCAP
-│       │   ├── images.json             # Đặc tả 17 ảnh Terminal & Wireshark
-│       │   └── docxs.json              # Nội dung phân tích kỹ thuật & bảng CVEs
-│       └── lab02/                      # Dữ liệu kịch bản bài Lab 02
-│           ├── attack/                 # Scripts Scapy tấn công (scenario1, scenario2, mitm)
-│           ├── image/                  # Dockerfile build môi trường User/Server/Attacker
-│           ├── docker-compose.yml      # Cấu hình mạng bridge ảo 10.2.6.0/24
-│           ├── setup_vm.sh             # Script cài Docker và dựng container
-│           ├── test_mitm.sh            # Script kiểm thử tấn công can thiệp dữ liệu
-│           ├── scripts.json            # 27 bước kịch bản tấn công & phòng thủ
-│           ├── images.json             # Đặc tả 15 ảnh sơ đồ mạng, Terminal & Wireshark
-│           └── docxs.json              # Nội dung báo cáo Lab 02 hoàn chỉnh
+│       ├── lab02/                      # Dữ liệu kịch bản bài Lab 02
+│       ├── lab03/                      # Dữ liệu kịch bản bài Lab 03
+│       ├── lab04/                      # Dữ liệu kịch bản bài Lab 04 (DoS)
+│       └── lab05/                      # Dữ liệu kịch bản bài Lab 05 (SQL Injection)
 ├── .gitignore
 └── README.md
 ```

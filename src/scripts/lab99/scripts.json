@@ -1,0 +1,46 @@
+{
+  "lab_name": "lab99",
+  "description": "Bai tap lon: tai su dung thu nghiem Lab02 (ARP/MITM) + Lab03 (Kaminsky/SPR) + Lab04 (DoS/RateLimit) + Lab05 (SQLi/PreparedStatements); tuy chon harden Ubuntu",
+  "steps": [
+    {
+      "key": "apply_lab02",
+      "name": "Ap dung chuoi Lab 02 (ARP -> MITM -> ARP tinh)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/08_apply_lab02.sh"
+    },
+    {
+      "key": "apply_lab03",
+      "name": "Ap dung chuoi Lab 03 (Kaminsky -> SPR)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/09_apply_lab03.sh"
+    },
+    {
+      "key": "apply_lab04",
+      "name": "Ap dung chuoi Lab 04 (DoS ICMP/SYN/DNS -> SYN Cookies & Rate Limit)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/11_apply_lab04.sh"
+    },
+    {
+      "key": "apply_lab05",
+      "name": "Ap dung chuoi Lab 05 (SQLi SELECT/INSERT -> Prepared Statements)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/12_apply_lab05.sh"
+    },
+    {
+      "key": "summary",
+      "name": "Tong hop project_summary.md",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/10_summary_project.sh"
+    },
+    {
+      "key": "harden_optional_init",
+      "name": "[Tuy chon] Khoi tao Lab99 harden",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/00_init.sh"
+    },
+    {
+      "key": "harden_optional_compare",
+      "name": "[Tuy chon] Chuoi harden + compare (01..07, 06)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/01_baseline_audit.sh"
+    },
+    {
+      "key": "down",
+      "name": "Dong Lab99 harden containers",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/99_down.sh"
+    }
+  ]
+}

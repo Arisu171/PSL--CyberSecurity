@@ -1,0 +1,18 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        nmap \
+        openssh-client \
+        netcat-openbsd \
+        iproute2 \
+        net-tools \
+        python3 \
+        ca-certificates \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /audit
+CMD ["tail", "-f", "/dev/null"]

@@ -1,0 +1,324 @@
+{
+  "lab_name": "lab04",
+  "metadata": {
+    "title": "BÁO CÁO BÀI THỰC HÀNH SỐ 4",
+    "subtitle": "PHÂN TÍCH MỘT SỐ KỸ THUẬT TẤN CÔNG TỪ CHỐI DỊCH VỤ (DoS)",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab04.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "YÊU CẦU KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "paragraph",
+      "text": "Thực hiện và phân tích 3 kịch bản tấn công từ chối dịch vụ (Denial of Service - DoS) phổ biến theo tài liệu hướng dẫn Lab04_HD.pdf: Tấn công ICMP Flood với kích thước gói tin lớn, tấn công TCP SYN Flood làm cạn kiệt hàng đợi kết nối của cổng dịch vụ Telnet, và tấn công khuếch đại phản xạ DNS Amplification qua máy chủ phân giải tên miền. Báo cáo ghi nhận thông số tài nguyên CPU/RAM (top), lưu lượng mạng (iftop), phân tích gói tin mạng (Wireshark) và đề xuất các giải pháp kỹ thuật phòng chống hiệu quả."
+    },
+    {
+      "type": "heading_1",
+      "text": "KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Triển khai mô hình mạng thực hành ảo hóa Docker"
+    },
+    {
+      "type": "paragraph",
+      "text": "Mô hình thí nghiệm được ảo hóa hoàn toàn bằng Docker Compose trên cùng subnet cầu ảo net-10.2.6.0 (Subnet: 10.2.6.0/24 ứng với nhóm 6 và mã lớp 02), bao gồm 4 container thực thi độc lập:"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Victim (Nạn nhân): IP 10.2.6.20, mở dịch vụ Telnet daemon trên cổng TCP 23, chạy các công cụ giám sát hiệu năng hệ thống top, iftop và bắt gói tin tcpdump."
+    },
+    {
+      "type": "bullet",
+      "text": "Container Attacker (Tấn công): IP 10.2.6.51, cài đặt công cụ hping3 và script Python saddam.py để phát động các luồng tấn công DoS với cờ giả mạo IP nguồn."
+    },
+    {
+      "type": "bullet",
+      "text": "Container User (Người dùng hợp lệ): IP 10.2.6.10, thực hiện kết nối dịch vụ Telnet và kiểm tra độ trễ mạng trong các giai đoạn trước và trong khi máy chủ bị tấn công."
+    },
+    {
+      "type": "bullet",
+      "text": "Container DNS Server (Máy chủ phản xạ): IP 10.2.6.53, chạy dịch vụ BIND9 hỗ trợ giải quyết truy vấn DNS đóng vai trò Reflector trong kịch bản DNS Amplification."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image1_topology.png",
+      "caption": "Hình 1.1: Sơ đồ cấu trúc mạng mô phỏng tấn công DoS (Subnet 10.2.6.0/24)"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image2_docker_ps.png",
+      "caption": "Hình 1.2: Danh sách 4 container Lab 04 khởi động thành công trên hệ thống"
+    },
+    {
+      "type": "heading_2",
+      "text": "2. Kịch bản tấn công 1: Tấn công ICMP Flood (Ping Flood gói tin lớn)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kịch bản thực hiện theo mục 3.1 trong tài liệu hướng dẫn: Attacker sử dụng hping3 gửi luồng gói tin ICMP Echo Request với kích thước dữ liệu cực đại 65000 bytes, bật chế độ flood và giả mạo địa chỉ IP nguồn ngẫu nhiên nhằm làm tràn ngập băng thông và kiệt quệ tài nguyên xử lý gói tin của Victim."
+    },
+    {
+      "type": "table",
+      "headers": ["Thông số đo lường", "Trước khi tấn công (Baseline)", "Trong khi bị tấn công (Under Attack)"],
+      "rows": [
+        ["CPU Idle (%id)", "99.2% (Hệ thống rảnh rỗi)", "8.2% (CPU bị chiếm dụng trên 91%)"],
+        ["Soft IRQ (%si - Ngắt mềm)", "0.0% (Bình thường)", "55.1% (ksoftirqd xử lý ngắt gói tin liên tục)"],
+        ["Bộ nhớ RAM đã sử dụng", "385.2 MiB", "780.4 MiB (Buffer lưu trữ phân mảnh IP tăng cao)"],
+        ["Lưu lượng nhận (iftop)", "~0 Kbps", "~125 Mbps (Bão hòa băng thông giao diện eth0)"],
+        ["Trạng thái kết nối User", "Ping 0.2ms, Telnet port 23 tức thì", "Ping trễ >800ms / rớt gói 66%, Telnet timeout"]
+      ]
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image3_top_sc1_before.png",
+      "caption": "Hình 2.1: Trạng thái CPU và RAM của Victim trước khi bị tấn công ICMP Flood"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image4_iftop_sc1_before.png",
+      "caption": "Hình 2.2: Băng thông mạng nhận trên card eth0 của Victim trước tấn công"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image5_hping3_sc1.png",
+      "caption": "Hình 2.3: Lệnh hping3 phát động ICMP Flood gói tin 65000 bytes từ máy Attacker"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image6_top_sc1_during.png",
+      "caption": "Hình 2.4: Tài nguyên CPU máy Victim bị nghẽn ngắt mềm (%si đạt 55.1%) khi bị tấn công"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image7_wireshark_sc1.png",
+      "caption": "Hình 2.5: Phân tích Wireshark cho thấy các gói tin ICMP kích thước lớn bị phân mảnh liên tục"
+    },
+    {
+      "type": "heading_3",
+      "text": "Trả lời Câu hỏi 1 (Kịch bản 1)"
+    },
+    {
+      "type": "paragraph",
+      "text": "a) Phân tích lệnh top (Mức tiêu thụ CPU và RAM):"
+    },
+    {
+      "type": "bullet",
+      "text": "CPU: Trước tấn công, CPU ở trạng thái rảnh rỗi (idle đạt 99.2%). Trong khi bị tấn công, tỷ lệ rảnh rỗi sụt giảm nghiêm trọng xuống chỉ còn 8.2%. Đáng chú ý, chỉ số %si (Software Interrupts) tăng vọt lên 55.1% và %sy (System time) đạt 34.6%. Hai tiến trình hạt nhân ksoftirqd/0 và ksoftirqd/1 chiếm dụng tới hơn 90% chu kỳ CPU để tiếp nhận và ghép nối các phân mảnh gói tin IP từ card mạng."
+    },
+    {
+      "type": "bullet",
+      "text": "RAM: Dung lượng RAM bị chiếm dụng tăng từ 385.2 MiB lên 780.4 MiB. Nguyên nhân do kernel Linux phải cấp phát bộ đệm IP Reassembly Buffer (hàm ip_fragment trong nhân) để lưu trữ tạm các gói tin bị chia nhỏ trước khi ghép thành gói tin 65000 bytes hoàn chỉnh."
+    },
+    {
+      "type": "paragraph",
+      "text": "b) Phân tích lệnh iftop (Lưu lượng mạng):"
+    },
+    {
+      "type": "bullet",
+      "text": "Trước tấn công, lưu lượng mạng trên card eth0 xấp xỉ 0 b/s. Trong khi tấn công, lưu lượng dồn vào giao diện mạng tăng vọt vượt ngưỡng 125 Mbps. Tốc độ nhận gói tin liên tục ở mức cực đại đã làm nghẽn hoàn toàn đường truyền kết nối của Victim."
+    },
+    {
+      "type": "paragraph",
+      "text": "c) Phân tích đặc điểm lưu lượng bằng Wireshark, xác định kỹ thuật và hậu quả:"
+    },
+    {
+      "type": "bullet",
+      "text": "Đặc điểm trên Wireshark: Xuất hiện hàng loạt gói tin IPv4 có cờ More Fragments = 1 và Fragment Offset tăng dần theo bội số 1480 bytes, thuộc cùng một ID phân mảnh cho tới gói tin cuối cùng. Gói tin reassembled có giao thức ICMP Type 8 (Echo Request) với payload dữ liệu khổng lồ 65000 bytes. Địa chỉ IP nguồn là các địa chỉ ngẫu nhiên giả mạo (Random Spoofed Source IPs)."
+    },
+    {
+      "type": "bullet",
+      "text": "Kỹ thuật tấn công: ICMP Flood / Ping of Death (Large Packet Ping Flood with IP Fragmentation)."
+    },
+    {
+      "type": "bullet",
+      "text": "Hậu quả: Tiêu tốn toàn bộ tài nguyên xử lý ngắt mạng của CPU và băng thông card mạng. Người dùng hợp lệ (User) bị rớt gói tin nặng nề (>60%), độ trễ mạng tăng gấp hàng nghìn lần và không thể truy cập dịch vụ Telnet ổn định."
+    },
+    {
+      "type": "heading_2",
+      "text": "3. Kịch bản tấn công 2: Tấn công TCP SYN Flood vào cổng Telnet (Port 23)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kịch bản thực hiện theo mục 3.2 trong tài liệu hướng dẫn: Attacker sử dụng hping3 gửi liên tục các gói tin TCP với cờ SYN được kích hoạt vào cổng dịch vụ Telnet (port 23) của Victim, kèm tùy chọn --flood và --rand-source nhằm làm tràn ngập hàng đợi kết nối bán mở (SYN Backlog Queue)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image8_top_sc2_before.png",
+      "caption": "Hình 3.1: Hàng đợi kết nối bán mở (SYN_RECV) hoàn toàn trống trước tấn công"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image9_hping3_sc2.png",
+      "caption": "Hình 3.2: Lệnh hping3 phát động luồng TCP SYN Flood vào port 23 của Victim"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image10_user_telnet_timeout.png",
+      "caption": "Hình 3.3: Kết nối Telnet từ người dùng hợp lệ bị từ chối / timeout do hàng đợi SYN bị tràn"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image11_wireshark_sc2.png",
+      "caption": "Hình 3.4: Bắt gói tin Wireshark với bộ lọc tcp.flags.syn==1 hiển thị bão gói tin SYN tràn ngập"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image12_victim_syn_recv.png",
+      "caption": "Hình 3.5: Lệnh ss ghi nhận 2048 kết nối treo ở trạng thái SYN-RECV làm tê liệt dịch vụ"
+    },
+    {
+      "type": "heading_3",
+      "text": "Trả lời Câu hỏi 2 (Kịch bản 2)"
+    },
+    {
+      "type": "paragraph",
+      "text": "a) Phân tích lệnh top (Mức tiêu thụ CPU và RAM):"
+    },
+    {
+      "type": "bullet",
+      "text": "Mức tiêu thụ CPU tăng nhẹ (idle còn khoảng 75-80%), RAM duy trì ổn định. Điều này cho thấy điểm yếu của SYN Flood không nhắm vào tài nguyên xử lý tính toán hay bộ nhớ tổng thể, mà nhắm trực diện vào cấu trúc dữ liệu bảng trạng thái kết nối TCP (TCP connection table / backlog queue) trong nhân Linux."
+    },
+    {
+      "type": "paragraph",
+      "text": "b) Phân tích lệnh iftop (Lưu lượng mạng):"
+    },
+    {
+      "type": "bullet",
+      "text": "Băng thông mạng tiêu thụ không quá lớn (~15-25 Mbps) do mỗi gói tin SYN chỉ có kích thước tiêu chuẩn 54-60 bytes. Tuy nhiên, mật độ gói tin trên giây (Packets Per Second - PPS) cực kỳ cao, lên tới hàng trăm nghìn gói/giây, làm tràn ngập bộ đệm xử lý socket của hệ điều hành."
+    },
+    {
+      "type": "paragraph",
+      "text": "c) Phân tích đặc điểm Wireshark, xác định kỹ thuật và hậu quả:"
+    },
+    {
+      "type": "bullet",
+      "text": "Đặc điểm trên Wireshark: Bộ lọc `tcp.flags.syn == 1 && tcp.flags.ack == 0` bắt được liên tục các gói tin TCP SYN gửi tới cổng 23 từ hàng ngàn địa chỉ IP và cổng nguồn ngẫu nhiên giả mạo. Máy chủ Victim liên tục phản hồi gói SYN-ACK nhưng không bao giờ nhận được gói tin ACK cuối cùng để hoàn tất quy trình bắt tay 3 bước (3-way handshake)."
+    },
+    {
+      "type": "bullet",
+      "text": "Kỹ thuật tấn công: TCP SYN Flood (Half-open Connection Exhaustion Attack)."
+    },
+    {
+      "type": "bullet",
+      "text": "Hậu quả: Toàn bộ 2048 khe cắm trong hàng đợi SYN Backlog của cổng 23 bị chiếm giữ ở trạng thái SYN_RECV. Khi người dùng hợp lệ (User) thực hiện lệnh `telnet 10.2.6.20`, yêu cầu bắt tay bị máy chủ bỏ qua (drop) hoặc từ chối, dẫn đến lỗi 'Connection timed out', khiến dịch vụ hoàn toàn mất khả năng phục vụ."
+    },
+    {
+      "type": "paragraph",
+      "text": "d) Mô tả ngắn gọn cách thức phòng chống tấn công TCP SYN Flood:"
+    },
+    {
+      "type": "bullet",
+      "text": "1. Bật tính năng TCP SYN Cookies (`sysctl -w net.ipv4.tcp_syncookies=1`): Khi hàng đợi SYN bị đầy, kernel không lưu trạng thái kết nối trong bộ nhớ mà mã hóa thông tin kết nối vào chính số thứ tự tuần tự ban đầu (Initial Sequence Number - ISN) trong gói SYN-ACK. Chỉ khi nhận được gói ACK hợp lệ chứa số xác thực giải mã đúng, kết nối mới được cấp phát bộ nhớ."
+    },
+    {
+      "type": "bullet",
+      "text": "2. Tăng dung lượng hàng đợi kết nối: Nâng cao giá trị `net.ipv4.tcp_max_syn_backlog` lên 4096 hoặc 8192 để tăng khả năng chịu tải."
+    },
+    {
+      "type": "bullet",
+      "text": "3. Giảm thời gian chờ phản hồi: Giảm `net.ipv4.tcp_synack_retries` từ 5 xuống 1 hoặc 2 để nhanh chóng giải phóng các kết nối bán mở không nhận được phản hồi."
+    },
+    {
+      "type": "bullet",
+      "text": "4. Sử dụng tường lửa iptables áp dụng Rate Limiting: Giới hạn số lượng gói tin SYN mới được phép đi vào hệ thống trong mỗi giây."
+    },
+    {
+      "type": "heading_2",
+      "text": "4. Kịch bản tấn công 3: Tấn công DNS Amplification (Khuếch đại phản xạ DNS)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kịch bản thực hiện theo mục 3.3 trong tài liệu hướng dẫn: Attacker sử dụng công cụ saddam.py gửi các gói tin truy vấn DNS UDP tới máy chủ DNS Server (10.2.6.53) nhưng giả mạo địa chỉ IP nguồn thành địa chỉ của máy Victim (10.2.6.20). Máy chủ DNS xử lý và gửi phản hồi kích thước lớn dồn dập về Victim, gây ngập lụt đường truyền."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image13_saddam_sc3.png",
+      "caption": "Hình 4.1: Công cụ saddam.py gửi truy vấn DNS giả mạo nguồn phản xạ về Victim"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image14_wireshark_sc3.png",
+      "caption": "Hình 4.2: Wireshark ghi nhận các gói tin phản hồi DNS kích thước 1480 bytes dồn dập về Victim"
+    },
+    {
+      "type": "heading_3",
+      "text": "Trả lời Câu hỏi 3 (Kịch bản 3)"
+    },
+    {
+      "type": "paragraph",
+      "text": "a) Phân tích lệnh top (Mức tiêu thụ CPU và RAM):"
+    },
+    {
+      "type": "bullet",
+      "text": "CPU và RAM trên Victim tiêu tốn ở mức trung bình, tuy nhiên hàng đợi xử lý gói tin UDP của card mạng bị chiếm dụng tối đa để tiếp nhận các gói phản hồi DNS UDP từ máy chủ phân giải."
+    },
+    {
+      "type": "paragraph",
+      "text": "b) Phân tích lệnh iftop (Lượng lưu lượng nhận và hệ số khuếch đại):"
+    },
+    {
+      "type": "bullet",
+      "text": "Lưu lượng nhận trên Victim tăng vọt. Phân tích gói tin cho thấy: Mỗi gói tin truy vấn DNS mà Attacker gửi đi chỉ có kích thước khoảng 64 bytes (truy vấn bản ghi ANY hoặc EDNS0). Tuy nhiên, gói tin phản hồi mà DNS Server trả về cho Victim chứa toàn bộ các bản ghi DNS với kích thước lên tới 1460 - 1480 bytes. Hệ số khuếch đại (Amplification Factor) đạt xấp xỉ 22.8 lần (1460 / 64 ≈ 22.8x)."
+    },
+    {
+      "type": "paragraph",
+      "text": "c) Phân tích đặc điểm Wireshark, xác định kỹ thuật và hậu quả:"
+    },
+    {
+      "type": "bullet",
+      "text": "Đặc điểm trên Wireshark: Bộ lọc `dns && ip.dst == 10.2.6.20` hiển thị hàng loạt gói tin DNS Standard query response từ cổng UDP 53 của DNS Server gửi dồn dập về Victim. Các gói tin phản hồi có cờ No error, chứa hàng chục bản ghi Answer RRs và Authority RRs."
+    },
+    {
+      "type": "bullet",
+      "text": "Kỹ thuật tấn công: DNS Amplification Attack (Reflected Distributed Denial of Service - rDoS)."
+    },
+    {
+      "type": "bullet",
+      "text": "Hậu quả: Kẻ tấn công chỉ cần một lượng băng thông tải lên (upload) rất nhỏ nhưng có thể tạo ra một luồng dữ liệu khổng lồ bóp nghẹt hoàn toàn đường truyền băng thông tải xuống (download) của nạn nhân, khiến hệ thống mất kết nối với mạng Internet."
+    },
+    {
+      "type": "paragraph",
+      "text": "d) Mô tả ngắn gọn cách thức phòng chống tấn công DNS Amplification:"
+    },
+    {
+      "type": "bullet",
+      "text": "1. Áp dụng chuẩn BCP 38 (Ingress/Egress Filtering) tại các nhà cung cấp dịch vụ mạng (ISP): Chặn tất cả các gói tin có IP nguồn không thuộc dải địa chỉ IP được cấp phát của mạng con đó, triệt tiêu khả năng giả mạo IP (IP Spoofing) ngay từ cửa ngõ."
+    },
+    {
+      "type": "bullet",
+      "text": "2. Cấu hình DNS Server an toàn: Vô hiệu hóa tính năng truy vấn đệ quy mở (Open Resolver) đối với các máy khách ngoài mạng nội bộ (`recursion no;`)."
+    },
+    {
+      "type": "bullet",
+      "text": "3. Kích hoạt tính năng Response Rate Limiting (RRL): Cấu hình giới hạn tần suất trả lời phản hồi trên máy chủ DNS đối với các truy vấn lặp lại từ cùng một đối tượng."
+    },
+    {
+      "type": "heading_2",
+      "text": "5. Đánh giá thực nghiệm các giải pháp phòng chống"
+    },
+    {
+      "type": "paragraph",
+      "text": "Tiến hành áp dụng đồng thời cơ chế TCP SYN Cookies và luật tường lửa iptables Rate Limiting trên máy chủ Victim để kiểm chứng khả năng phục vụ khi đang bị tấn công:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab04/image15_defense_syncookies.png",
+      "caption": "Hình 5.1: Kích hoạt SYN Cookies và iptables giới hạn tốc độ kết nối bảo vệ thành công Victim"
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả thực nghiệm: Khi Attacker tiếp tục kích hoạt luồng tấn công SYN Flood, các gói tin vượt ngưỡng bị iptables DROP ngay tại tầng mạng. Nhờ cơ chế SYN Cookies, người dùng hợp lệ (User) thực hiện lệnh `nc -z -v -w 3 10.2.6.20 23` vẫn kết nối thành công tới dịch vụ Telnet mà không gặp phải bất kỳ độ trễ hay lỗi timeout nào."
+    }
+  ]
+}

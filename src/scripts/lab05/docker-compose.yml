@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  webserver:
+    image: lab02_image
+    container_name: lab05_webserver
+    hostname: webserver
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./sqli:/var/www/html/sqli
+      - ./webvul.sql:/tmp/webvul.sql
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.80
+
+  attacker:
+    image: lab02_image
+    container_name: lab05_attacker
+    hostname: attacker
+    tty: true
+    stdin_open: true
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.51
+
+  user:
+    image: lab02_image
+    container_name: lab05_user
+    hostname: user
+    tty: true
+    stdin_open: true
+    networks:
+      labnet:
+        ipv4_address: 10.2.6.10
+
+networks:
+  labnet:
+    name: net-10.2.6.0
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.2.6.0/24

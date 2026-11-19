@@ -1,0 +1,232 @@
+{
+  "lab_name": "lab05",
+  "metadata": {
+    "title": "BÁO CÁO BÀI THỰC HÀNH SỐ 5",
+    "subtitle": "KIỂM THỬ LỖ HỔNG SQL INJECTION TRÊN ỨNG DỤNG WEB",
+    "student": {
+      "name": "Nguyễn Bảo Long",
+      "id": "223001756",
+      "class": "CNTT D2023B",
+      "course_code": "02 (x = 02)",
+      "group": "Nhóm 6 (y = 6)",
+      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+    },
+    "default_output": "bin/docs/NguyenBaoLong_223001756_Lab05.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "YÊU CẦU KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "paragraph",
+      "text": "Thực hiện kiểm thử xâm nhập lỗ hổng SQL Injection trên ứng dụng web theo phương pháp kiểm thử hộp đen (Black-box Testing) quy định trong tài liệu hướng dẫn Lab05_HD.pdf: Thực hiện hai bài toán điển hình gồm khai thác câu truy vấn SELECT (sqli1.php) và câu truy vấn INSERT INTO (sqli2.php). Quá trình kiểm thử áp dụng các kỹ thuật Tautology-based, ORDER BY Column Enumeration, UNION-based Extraction, và Blind SQL Injection (Boolean-based). Cuối cùng, đề xuất giải pháp lập trình an toàn với Prepared Statements (PDO) và kiểm chứng hiệu quả khắc phục."
+    },
+    {
+      "type": "heading_1",
+      "text": "KẾT QUẢ THỰC HÀNH"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Triển khai mô hình Web Server và Cơ sở dữ liệu phòng lab"
+    },
+    {
+      "type": "paragraph",
+      "text": "Môi trường thực hành được triển khai dưới dạng cụm container Docker kết nối trên subnet cầu ảo net-10.2.6.0 (Subnet: 10.2.6.0/24):"
+    },
+    {
+      "type": "bullet",
+      "text": "Container Web Server: IP 10.2.6.80, chạy Apache2, PHP và hệ quản trị CSDL MariaDB/MySQL. Đã import thành công cơ sở dữ liệu webvul từ file kịch bản webvul.sql."
+    },
+    {
+      "type": "bullet",
+      "text": "Container Attacker (Kiểm thử viên): IP 10.2.6.51, sử dụng các công cụ gửi yêu cầu HTTP (curl, python) và kiểm tra bắt gói trung chuyển Burp Suite."
+    },
+    {
+      "type": "bullet",
+      "text": "Container User: IP 10.2.6.10, đóng vai trò người dùng truy cập web thông thường."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image1_topology.png",
+      "caption": "Hình 1.1: Sơ đồ mạng mô phỏng kiểm thử ứng dụng Web và CSDL (Subnet 10.2.6.0/24)",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image2_docker_ps.png",
+      "caption": "Hình 1.2: Các container Web Server, Attacker và User khởi động Up trong Docker",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "2. Ví dụ 1: Kiểm thử lỗ hổng SELECT SQL Injection (sqli1.php)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Quy trình kiểm thử hộp đen được thực hiện tuần tự theo mục 5.2.1 trong tài liệu hướng dẫn:"
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 1-4: Xác định điểm vào (Input Identification). Khi người dùng nhấn vào liên kết trên trang sqli1.html, trình duyệt gửi yêu cầu HTTP GET tới địa chỉ `http://10.2.6.80/sqli/sqli1.php?cat=laptop`. Sử dụng Burp Suite phân tích thông điệp HTTP xác nhận chỉ có duy nhất một tham số đầu vào là `cat` truyền qua phương thức GET."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image3_burp_intercept_get.png",
+      "caption": "Hình 2.1: Bắt và phân tích yêu cầu HTTP GET qua Burp Suite xác định tham số cat",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 5-6: Phát hiện lỗ hổng (Vulnerability Detection). Thử truyền giá trị tham số chứa ký tự nháy đơn `laptop'`. Máy chủ phản hồi thông báo lỗi cú pháp SQL: `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''laptop''' at line 1`. Thông báo này chứng minh giá trị người dùng nhập vào được nối chuỗi trực tiếp vào câu lệnh SQL mà không qua khâu lọc dữ liệu (Sanitization), đồng thời xác nhận hệ quản trị CSDL phía sau là MySQL/MariaDB."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image4_error_quote.png",
+      "caption": "Hình 2.2: Thông báo lỗi cú pháp để lộ lỗ hổng SQLi và hệ quản trị CSDL MySQL",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 7: Khôi phục cú pháp với ký tự chú thích `#` (mã hóa URL `%23`). Khi gửi `cat=laptop';%23`, trang web trả về danh sách sản phẩm bình thường. Từ đó phán đoán được cấu trúc câu truy vấn gốc có dạng: `SELECT * FROM tbl_product WHERE category = 'Tham_số_đầu_vào'`."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image5_comment_hash.png",
+      "caption": "Hình 2.3: Thêm ký tự chú thích # triệt tiêu phần sau câu lệnh, trang web phản hồi bình thường",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 8: Khai thác Tautology-based SQLi. Truyền giá trị `any' or 1;%23`. Biểu thức điều kiện trong mệnh đề WHERE trở thành `WHERE category = 'any' OR 1`, luôn luôn đúng với mọi bản ghi trong bảng. Kết quả trang web hiển thị toàn bộ danh mục sản phẩm có trong cơ sở dữ liệu."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image6_tautology_or1.png",
+      "caption": "Hình 2.4: Tấn công Tautology (any' or 1;#) trích xuất toàn bộ dữ liệu bảng sản phẩm",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 9: Dò số lượng cột bằng mệnh đề ORDER BY. Khi truyền `laptop' ORDER BY 4;%23`, trang web phản hồi bình thường chứng minh truy vấn có ít nhất 4 cột. Khi tăng lên `laptop' ORDER BY 5;%23`, CSDL báo lỗi `Unknown column '5' in 'order clause'`. Kết luận: Câu truy vấn gốc trả về chính xác 4 cột dữ liệu."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image7_order_by_enumeration.png",
+      "caption": "Hình 2.5: Kỹ thuật ORDER BY xác định chính xác câu truy vấn có đúng 4 cột",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 10: Khai thác trích xuất dữ liệu bằng UNION SELECT. Sử dụng payload `laptop' UNION SELECT 1, database(), 3, 4;%23`. Hàng dữ liệu thêm vào từ mệnh đề UNION được hiển thị trên giao diện tại vị trí trường Vendor, làm lộ rõ tên cơ sở dữ liệu mục tiêu là `webvul`."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image8_union_select_database.png",
+      "caption": "Hình 2.6: Tấn công UNION SELECT trích xuất thành công tên cơ sở dữ liệu 'webvul'",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 11: Kiểm thử Boolean-based Blind SQL Injection. Khi chèn biểu thức logic `laptop' and substring(database(),1,1)='w';%23`, điều kiện đúng và trang web trả về danh sách sản phẩm. Khi thử với chữ cái sai `laptop' and substring(database(),1,1)='a';%23`, điều kiện sai và trang web trả về rỗng. Điều này chứng minh ứng dụng có thể bị khai thác dò từng ký tự theo kỹ thuật Blind SQL Injection."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image9_blind_boolean.png",
+      "caption": "Hình 2.7: Kiểm thử Boolean Blind SQLi suy đoán chính xác ký tự đầu tên CSDL là 'w'",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "3. Ví dụ 2: Kiểm thử lỗ hổng INSERT SQL Injection (sqli2.php)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Quy trình kiểm thử theo mục 5.2.2 trong tài liệu hướng dẫn:"
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 1-4: Xác định điểm vào trong form nhập liệu POST. Giao diện form `sqli2.html` cho phép người dùng thêm sản phẩm mới. Dùng Burp Suite bắt thông điệp HTTP POST gửi tới `sqli2.php` chứa 4 tham số: `cat`, `vendor`, `model`, `price`. Câu truy vấn phía server được phán đoán có dạng: `INSERT INTO tbl_product (vendor, model, price, category) VALUES ('$vendor', '$model', '$price', '$cat')`."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image10_burp_post_insert.png",
+      "caption": "Hình 3.1: Burp Suite bắt thông điệp POST với 4 tham số trong chức năng thêm sản phẩm",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 5-8: Dò tìm lỗ hổng trên tham số vendor. Khi nhập `vendor = anyVendor'`, ứng dụng trả về thông báo lỗi cú pháp. Để vượt qua cấu trúc đóng ngoặc của mệnh đề VALUES, kiểm thử viên truyền giá trị: `anyVendor', '1', '2', '3');#`. Câu truy vấn trở thành: `INSERT INTO tbl_product(...) VALUES ('anyVendor', '1', '2', '3');# ...`. Toàn bộ phần còn lại bị chú thích bỏ qua, và một sản phẩm mới với các giá trị giả lập được ghi thành công vào CSDL và xuất hiện trên bảng danh sách."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image11_insert_quote_error.png",
+      "caption": "Hình 3.2: Tham số vendor nhận dấu nháy đơn làm hỏng cấu trúc câu lệnh INSERT",
+      "width": 6.0
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image12_insert_values_align.png",
+      "caption": "Hình 3.3: Cân bằng số lượng tham số trong mệnh đề VALUES thêm bản ghi thành công",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 9: Do thám thông tin qua câu lệnh INSERT. Thay thế vị trí cột model trong payload bằng hàm hệ thống: `anyVendor', database(), '2', '3');#`. Sau khi thực thi, bảng sản phẩm hiển thị một bản ghi mới có trường Model là giá trị trả về của hàm `database()` — chính là xâu `webvul`."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image13_insert_database_leak.png",
+      "caption": "Hình 3.4: Hàm database() được thực thi trong lệnh INSERT làm lộ tên CSDL webvul",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Bước 10: Khai thác dữ liệu qua câu truy vấn con (Subquery). Sử dụng payload `anyVendor', (select version()), '2', '3');#`. Kết quả trong bảng sản phẩm đã ghi nhận chuỗi phiên bản chính xác của máy chủ MariaDB đang chạy. Kỹ thuật này chứng minh kẻ tấn công có thể chèn các câu truy vấn SELECT lồng nhau vào lệnh INSERT để đánh cắp bất kỳ thông tin nào từ các bảng khác (như bảng người dùng, mật khẩu, tài khoản quản trị)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image14_insert_version_subquery.png",
+      "caption": "Hình 3.5: Truy vấn con (subquery) trích xuất thành công phiên bản phần mềm máy chủ CSDL",
+      "width": 6.0
+    },
+    {
+      "type": "heading_2",
+      "text": "4. Đề xuất giải pháp phòng chống và kiểm chứng khắc phục"
+    },
+    {
+      "type": "paragraph",
+      "text": "Nguyên nhân cốt lõi của lỗ hổng SQL Injection là do mã nguồn ứng dụng web sử dụng phép toán nối chuỗi trực tiếp giữa các biến nhập từ người dùng (`$_GET`, `$_POST`) với câu lệnh SQL mà không qua kiểm tra dữ liệu."
+    },
+    {
+      "type": "paragraph",
+      "text": "Các giải pháp phòng ngừa toàn diện theo chuẩn an toàn ứng dụng web (OWASP Top 10):"
+    },
+    {
+      "type": "bullet",
+      "text": "1. Sử dụng Prepared Statements với Parameter Binding (Ràng buộc tham số): Đây là giải pháp phòng thủ hiệu quả và bắt buộc nhất. Câu lệnh SQL được biên dịch trước trong cơ sở dữ liệu với các tham số giữ chỗ (placeholders). Dữ liệu người dùng truyền vào sau đó được xử lý tách biệt như một giá trị chuỗi thuần túy (Literal Value), loại trừ hoàn toàn khả năng can thiệp vào cấu trúc cú pháp của câu lệnh."
+    },
+    {
+      "type": "bullet",
+      "text": "2. Sử dụng thư viện PDO (PHP Data Objects) hoặc MySQLi hiện đại: Thay thế hoàn toàn các hàm cũ không an toàn (`mysql_*`). Cấu hình `PDO::ATTR_EMULATE_PREPARES => false` để đảm bảo cơ sở dữ liệu thực hiện chuẩn hóa tham số ở mức native server-side."
+    },
+    {
+      "type": "bullet",
+      "text": "3. Kiểm tra tính hợp lệ của dữ liệu đầu vào (Input Validation & Type Casting): Ép kiểu chặt chẽ (ví dụ: `(int)$id`, `(float)$price`), sử dụng danh sách trắng (Whitelisting) đối với các tham số danh mục, tên cột hoặc thứ tự sắp xếp."
+    },
+    {
+      "type": "bullet",
+      "text": "4. Tắt hiển thị lỗi cơ sở dữ liệu ra giao diện (Error Handling): Cấu hình `display_errors = Off` trong php.ini và bắt ngoại lệ qua khối `try-catch` để tránh để lộ thông tin cấu trúc CSDL và phiên bản phần mềm cho kẻ tấn công thu thập thông tin."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab05/image15_defense_prepared_statement.png",
+      "caption": "Hình 4.1: Kiểm chứng trên trang sqli1_fixed.php và sqli2_fixed.php ngăn chặn hoàn toàn SQLi",
+      "width": 6.0
+    },
+    {
+      "type": "paragraph",
+      "text": "Kết quả thực nghiệm trên mã nguồn đã khắc phục (sqli1_fixed.php và sqli2_fixed.php): Khi kiểm thử viên gửi lại các payload độc hại như `any' or 1;#` hay `anyVendor', database(), ...;#`, hệ thống xử lý an toàn tuyệt đối. Trang web không còn bị lỗi cú pháp, dữ liệu trong CSDL được bảo toàn và không có bất kỳ thông tin nhạy cảm nào bị rò rỉ."
+    }
+  ]
+}

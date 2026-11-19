@@ -1,0 +1,4 @@
+method=Lab05_SQLi_PreparedStatements
+scripts=00_init,01_example1_select,02_example2_insert,03_test_defense,99_down
+log=/media/sf_.shared/scripts/lab99/volumes/reports/lab05_verify.log
+result=PASS

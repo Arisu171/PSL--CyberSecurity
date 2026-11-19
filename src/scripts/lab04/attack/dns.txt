@@ -1,0 +1,2 @@
+# Danh sach DNS Server dung lam Reflector cho kịch bản DNS Amplification
+10.2.6.53

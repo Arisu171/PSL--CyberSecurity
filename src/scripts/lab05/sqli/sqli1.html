@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>SQL Injection Pentest - Example 1</title>
+		<script type="text/javascript" src="assets/js/XRegExp.js"></script>
+		<script type="text/javascript" src="assets/js/shCore.js"></script>
+		<script type="text/javascript" src="assets/js/shBrushPhp.js"></script>
+		<link href="assets/css/shCore.css" rel="stylesheet" type="text/css" />
+		<link href="assets/css/shThemeDefault.css" rel="stylesheet" type="text/css" />
+		<script type="text/javascript">
+			SyntaxHighlighter.all();
+		</script>
+		<style type="text/css">
+			body{
+				margin: 30px
+			}
+			form {
+				width:300px;
+				margin: 20px auto;
+			}
+			input {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				border:1px solid #ccc;
+				font-size:20px;
+				width:300px;
+				min-height:30px;
+				display:block;
+				margin-bottom:15px;
+				margin-top:5px;
+				outline: none;
+				-webkit-border-radius:5px;
+				-moz-border-radius:5px;
+				-o-border-radius:5px;
+				-ms-border-radius:5px;
+				border-radius:5px;
+			}
+			input[type=submit] {
+				background:#066923;
+				padding:10px;
+				color: #fff;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<h2 align="center">SQL Injection Pentest - Example 1 </h2>
+		
+		-- <b>Product category</b> --<br>
+		<ul>
+			<li><a href="sqli1.php?cat=laptop">Laptop</a>
+			<li><a href="sqli1.php?cat=mouse">Mouse</a>
+			<li><a href="sqli1.php?cat=keyboard">Keyboard</a>
+		</ul>
+		
+	</body>
+</html>

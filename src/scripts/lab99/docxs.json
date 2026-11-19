@@ -1,0 +1,62 @@
+{
+  "lab_name": "lab99",
+  "metadata": {
+    "title": "BÁO CÁO BÀI TẬP LỚN",
+    "subtitle": "HARDENING UBUNTU SERVER VÀ ĐÁNH GIÁ HIỆU QUẢ TRƯỚC/SAU",
+    "default_output": "bin/docs/Lab99_Hardening_Ubuntu.docx"
+  },
+  "content": [
+    {
+      "type": "heading_1",
+      "text": "1. Mục tiêu và phạm vi"
+    },
+    {
+      "type": "paragraph",
+      "text": "Xây dựng môi trường Ubuntu Server lab, đo bề mặt và điểm bảo mật trước hardening; áp dụng các biện pháp (SSH, UFW, Fail2ban, sysctl, PAM, auditd, unattended-upgrades, AppArmor); đo lại và so sánh định lượng."
+    },
+    {
+      "type": "heading_1",
+      "text": "2. Môi trường thí nghiệm"
+    },
+    {
+      "type": "bullet",
+      "text": "Docker: lab99_target 10.2.99.10, lab99_assessor 10.2.99.20, subnet 10.2.99.0/24"
+    },
+    {
+      "type": "bullet",
+      "text": "Tuỳ chọn: 2 VM VirtualBox (Kali + Ubuntu Server) cho đánh giá thủ công bổ sung"
+    },
+    {
+      "type": "heading_1",
+      "text": "3. Kết quả trước hardening"
+    },
+    {
+      "type": "paragraph",
+      "text": "Đính kèm metrics_before, surface_before, Lynis (nếu có). Phân tích rủi ro: SSH 22 + password + root login."
+    },
+    {
+      "type": "heading_1",
+      "text": "4. Biện pháp hardening đã áp dụng"
+    },
+    {
+      "type": "paragraph",
+      "text": "Mô tả từng control và cấu hình tương ứng trong hardening/ (sshd drop-in, UFW, fail2ban jail.local, sysctl, pwquality, auditd, unattended-upgrades)."
+    },
+    {
+      "type": "heading_1",
+      "text": "5. Kết quả sau hardening và so sánh"
+    },
+    {
+      "type": "paragraph",
+      "text": "Đính kèm compare_report.md, bảng delta điểm lab99 / Lynis, Nmap trước-sau, xác minh key-only SSH cổng 2222."
+    },
+    {
+      "type": "heading_1",
+      "text": "6. Hạn chế và hướng phát triển"
+    },
+    {
+      "type": "paragraph",
+      "text": "Container khác bare-metal (AppArmor/auditd/systemd). Hướng mở: Wazuh, OpenSCAP/CIS, Ansible CI."
+    }
+  ]
+}

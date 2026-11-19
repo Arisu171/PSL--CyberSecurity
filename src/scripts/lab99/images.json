@@ -1,0 +1,46 @@
+{
+  "lab_name": "lab99",
+  "description": "Danh sach minh chung hinh anh goi y cho bao cao Lab99",
+  "images": [
+    {
+      "id": "image1",
+      "filename": "image1_docker_ps.png",
+      "caption": "Hai container lab99_target / lab99_assessor dang chay"
+    },
+    {
+      "id": "image2",
+      "filename": "image2_metrics_before.png",
+      "caption": "Bang metrics_before (diem thap, SSH 22, password auth yes)"
+    },
+    {
+      "id": "image3",
+      "filename": "image3_nmap_before.png",
+      "caption": "Nmap inventory truoc harden – cong 22 mo"
+    },
+    {
+      "id": "image4",
+      "filename": "image4_harden_pass.png",
+      "caption": "Ket qua 03_harden.sh PASS"
+    },
+    {
+      "id": "image5",
+      "filename": "image5_sshd_T_after.png",
+      "caption": "sshd -T: port 2222, PermitRootLogin no, PasswordAuthentication no"
+    },
+    {
+      "id": "image6",
+      "filename": "image6_ufw_fail2ban.png",
+      "caption": "ufw status active + fail2ban-client status sshd"
+    },
+    {
+      "id": "image7",
+      "filename": "image7_nmap_after.png",
+      "caption": "Nmap sau harden – 22 dong, 2222 mo"
+    },
+    {
+      "id": "image8",
+      "filename": "image8_compare_report.png",
+      "caption": "compare_report.md – bang truoc/sau va delta diem"
+    }
+  ]
+}

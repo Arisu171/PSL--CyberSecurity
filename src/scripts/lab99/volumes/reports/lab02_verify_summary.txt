@@ -1,0 +1,4 @@
+method=Lab02_ARP_MITM_StaticARP
+scripts=00_init,01_scenario1,02_scenario2,03_scenario3,04_fix_server
+log=/media/sf_.shared/scripts/lab99/volumes/reports/lab02_verify.log
+result=PASS
