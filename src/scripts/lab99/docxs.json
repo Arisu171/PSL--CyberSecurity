@@ -285,7 +285,7 @@
     {
       "type": "image",
       "src": "bin/imgs/lab99/image10_verify_arp.png",
-      "caption": "Hình 10: Thực nghiệm kiểm thử nghiệm thu tầng liên kết: Cơ chế Static ARP và rp_filter bảo vệ toàn vẹn bảng ánh xạ (LAB02_VERIFY=PASS)"
+      "caption": "Hình 10: Thực nghiệm kiểm thử nghiệm thu tầng liên kết: Cơ chế Static ARP và rp_filter bảo vệ toàn vẹn bảng ánh xạ"
     },
     {
       "type": "heading_2",
@@ -302,7 +302,7 @@
     {
       "type": "image",
       "src": "bin/imgs/lab99/image11_verify_dns.png",
-      "caption": "Hình 11: Thực nghiệm kiểm thử nghiệm thu hạ tầng DNS: SPR mở rộng 28,231 cổng triệt tiêu nguy cơ đầu độc đệm (LAB03_VERIFY=PASS)"
+      "caption": "Hình 11: Thực nghiệm kiểm thử nghiệm thu hạ tầng DNS: SPR mở rộng 28,231 cổng triệt tiêu nguy cơ đầu độc đệm"
     },
     {
       "type": "heading_2",
@@ -319,7 +319,7 @@
     {
       "type": "image",
       "src": "bin/imgs/lab99/image12_verify_dos.png",
-      "caption": "Hình 12: Thực nghiệm kiểm thử nghiệm thu tầng giao vận: Dịch vụ duy trì đáp ứng 100% trong tâm bão SYN Flood nhờ TCP SYN Cookies (LAB04_VERIFY=PASS)"
+      "caption": "Hình 12: Thực nghiệm kiểm thử nghiệm thu tầng giao vận: Dịch vụ duy trì đáp ứng 100% trong tâm bão SYN Flood nhờ TCP SYN Cookies"
     },
     {
       "type": "heading_2",
@@ -344,7 +344,7 @@
     {
       "type": "image",
       "src": "bin/imgs/lab99/image13_verify_sqli.png",
-      "caption": "Hình 13: Thực nghiệm kiểm thử tầng ứng dụng: Prepared Statements vô hiệu hóa hoàn toàn chuỗi tấn công SQL Injection (LAB05_VERIFY=PASS)"
+      "caption": "Hình 13: Thực nghiệm kiểm thử tầng ứng dụng: Prepared Statements vô hiệu hóa hoàn toàn chuỗi tấn công SQL Injection"
     },
     {
       "type": "heading_2",
@@ -369,7 +369,7 @@
     {
       "type": "image",
       "src": "bin/imgs/lab99/image14_verify_rce.png",
-      "caption": "Hình 14: Thực nghiệm kiểm thử OS Command Injection: Whitelist Regex chặn đứng hành vi chèn lệnh điều khiển trái phép (LAB05_VERIFY=PASS)"
+      "caption": "Hình 14: Thực nghiệm kiểm thử OS Command Injection: Whitelist Regex chặn đứng hành vi chèn lệnh điều khiển trái phép"
     },
     {
       "type": "heading_2",

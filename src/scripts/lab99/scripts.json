@@ -1,6 +1,6 @@
 {
   "lab_name": "lab99",
-  "description": "Du an nghien cuu an ninh mang toan dien: Phong thu theo chieu sau (Defense-in-Depth) tich hop Lab 01-05, Fail2ban va Auditd",
+  "description": "Du an nghien cuu an ninh mang toan dien: Phong thu theo chieu sau (Defense-in-Depth), Fail2ban va Auditd",
   "steps": [
     {
       "key": "init",
@@ -14,7 +14,7 @@
     },
     {
       "key": "assess_surface_before",
-      "name": "Tham do be mat tan cong mang ban dau (Nmap scan Lab 01)",
+      "name": "Tham do be mat tan cong mang ban dau (Nmap scan)",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/02_assess_surface.sh before"
     },
     {
@@ -49,22 +49,22 @@
     },
     {
       "key": "attack_layer2_arp",
-      "name": "Assessor tan cong ARP Spoofing -> Kiem chung phong thu Layer 2 (Lab 02)",
+      "name": "Assessor tan cong ARP Spoofing -> Kiem chung phong thu Layer 2",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/08_apply_lab02.sh"
     },
     {
       "key": "attack_dns_spr",
-      "name": "Assessor tham dinh DNS -> Kiem chung Source Port Randomization (Lab 03)",
+      "name": "Assessor tham dinh DNS -> Kiem chung Source Port Randomization",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/09_apply_lab03.sh"
     },
     {
       "key": "attack_dos_syn",
-      "name": "Assessor tan cong DoS SYN Flood -> Kiem chung SYN Cookies & Rate Limit (Lab 04)",
+      "name": "Assessor tan cong DoS SYN Flood -> Kiem chung SYN Cookies & Rate Limit",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/11_apply_lab04.sh"
     },
     {
       "key": "attack_appsec_sqli_rce",
-      "name": "Assessor tan cong SQLi & RCE -> Kiem chung Prepared Statements & Input Sanitization (Lab 05)",
+      "name": "Assessor tan cong SQLi & RCE -> Kiem chung Prepared Statements & Input Sanitization",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/12_apply_lab05.sh"
     },
     {

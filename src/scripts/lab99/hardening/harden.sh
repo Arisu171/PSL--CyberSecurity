@@ -44,7 +44,7 @@ sshd -t && pass "sshd_config hop le" || bad "sshd_config loi"
 service ssh restart || /usr/sbin/sshd
 pass "SSH dang lang nghe cong ${SSH_PORT}"
 
-note "2) UFW firewall & Rate Limiting (chong DoS Lab 04)"
+note "2) UFW firewall & Rate Limiting (chong DoS)"
 ufw --force reset >/dev/null
 ufw default deny incoming
 ufw default allow outgoing
@@ -78,7 +78,7 @@ sysctl --system >/tmp/sysctl_lab99.out 2>&1 || true
 grep -E 'rp_filter|tcp_syncookies|arp_ignore|arp_announce' /tmp/sysctl_lab99.out | head -10 || true
 pass "Da nap sysctl hardening"
 
-note "5) Co che phong thu ARP tinh (Static ARP Defense tu Lab 02)"
+note "5) Co che phong thu ARP tinh (Static ARP Defense)"
 # Khoa anh xa MAC cho gateway va assessor de triet tieu rui ro ARP Poisoning
 GATEWAY_IP="10.2.99.254"
 ASSESSOR_IP="10.2.99.20"

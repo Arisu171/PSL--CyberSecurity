@@ -58,7 +58,7 @@ fi
   echo
 
   echo "----------------------------------------------------------"
-  echo " PHAN 1: KIEM CHUNG PHONG THU SQL INJECTION (LAB 05)"
+  echo " PHAN 1: KIEM CHUNG PHONG THU SQL INJECTION"
   echo "----------------------------------------------------------"
 
   echo "[*] Buoc 2: Assessor tan cong SQLi Tautology tren endpoint CHUA PHONG THU (/sqli_vuln)"
@@ -141,7 +141,7 @@ else
 fi
 
 {
-  echo "method=Lab05_AppSec_SQLi_PreparedStatements_And_CommandInjection_Sanitization"
+  echo "method=AppSec_SQLi_PreparedStatements_And_CommandInjection_Sanitization"
   echo "target=${IP_TARGET}:${APP_PORT}"
   echo "assessor=${IP_ASSESSOR}"
   echo "log=$LOG"

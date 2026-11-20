@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab99: Tong hop minh chung thu nghiem an ninh phong thu toan dien (Lab 02 - Lab 05, Fail2ban, Auditd & Hardening).
+# Lab99: Tong hop minh chung thu nghiem an ninh phong thu toan dien (Fail2ban, Auditd & Hardening).
 # Toan bo qua trinh kiem thu duoc thuc hien truc tiep tren he thong Lab 99 (Target 10.2.99.10).
 
 set -u

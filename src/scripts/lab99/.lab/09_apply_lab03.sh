@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab99: Kiem chung phong thu ha tang DNS & Source Port Randomization (Ky thuat tu Lab 03).
+# Lab99: Kiem chung phong thu ha tang DNS & Source Port Randomization.
 # Thuc hien truc tiep tren moi truong Lab 99: Assessor (10.2.99.20) kiem thu Target (10.2.99.10).
 
 set -u
@@ -33,7 +33,7 @@ fi
 
 {
   echo "=========================================================="
-  echo " LAB99 -> KIEM CHUNG PHONG THU HA TANG DNS (LAB 03)"
+  echo " LAB99 -> KIEM CHUNG PHONG THU HA TANG DNS"
   echo " Thoi gian thuc hien: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo " Target: ${IP_TARGET} | Assessor: ${IP_ASSESSOR}"
   echo "=========================================================="
@@ -97,10 +97,10 @@ except Exception as e:
 } 2>&1 | tee "$LOG"
 
 if grep -q 'LAB03_VERIFY=PASS' "$LOG"; then
-  pass "Kiem chung phong thu DNS (Lab 03) tren Lab 99: PASS"
+  pass "Kiem chung phong thu DNS tren Lab 99: PASS"
   fail=0
 else
-  bad "Kiem chung phong thu DNS (Lab 03) tren Lab 99: FAIL"
+  bad "Kiem chung phong thu DNS tren Lab 99: FAIL"
   fail=1
 fi
 

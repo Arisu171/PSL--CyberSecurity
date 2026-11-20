@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab99: Kiem chung phong thu DoS TCP SYN Flood & ICMP Flood (Ky thuat tu Lab 04).
+# Lab99: Kiem chung phong thu DoS TCP SYN Flood & ICMP Flood.
 # Thuc hien truc tiep tren moi truong Lab 99: Assessor (10.2.99.20) tan cong kiem thu Target (10.2.99.10).
 
 set -u
@@ -34,7 +34,7 @@ fi
 
 {
   echo "=========================================================="
-  echo " LAB99 -> KIEM CHUNG PHONG THU DoS SYN/ICMP FLOOD (LAB 04)"
+  echo " LAB99 -> KIEM CHUNG PHONG THU DoS SYN/ICMP FLOOD"
   echo " Thoi gian thuc hien: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo " Target: ${IP_TARGET} | Assessor: ${IP_ASSESSOR}"
   echo "=========================================================="
@@ -122,10 +122,10 @@ fi
 } 2>&1 | tee "$LOG"
 
 if grep -q 'LAB04_VERIFY=PASS' "$LOG"; then
-  pass "Kiem chung phong thu DoS (Lab 04) tren Lab 99: PASS"
+  pass "Kiem chung phong thu DoS tren Lab 99: PASS"
   fail=0
 else
-  bad "Kiem chung phong thu DoS (Lab 04) tren Lab 99: FAIL"
+  bad "Kiem chung phong thu DoS tren Lab 99: FAIL"
   fail=1
 fi
 

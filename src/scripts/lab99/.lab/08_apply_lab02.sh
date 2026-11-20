@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab99: Kiem chung phong thu Layer 2 / Layer 3 (Ky thuat tu Lab 02).
+# Lab99: Kiem chung phong thu Layer 2 / Layer 3.
 # Thuc hien truc tiep tren moi truong Lab 99: Assessor (10.2.99.20) kiem thu Target (10.2.99.10).
 
 set -u
@@ -33,7 +33,7 @@ fi
 
 {
   echo "=========================================================="
-  echo " LAB99 -> KIEM CHUNG PHONG THU LAYER 2/3 (LAB 02)"
+  echo " LAB99 -> KIEM CHUNG PHONG THU LAYER 2/3"
   echo " Thoi gian thuc hien: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo " Target: ${IP_TARGET} | Assessor: ${IP_ASSESSOR}"
   echo "=========================================================="
@@ -90,10 +90,10 @@ fi
 } 2>&1 | tee "$LOG"
 
 if grep -q 'LAB02_VERIFY=PASS' "$LOG"; then
-  pass "Kiem chung phong thu Layer 2/3 (Lab 02) tren Lab 99: PASS"
+  pass "Kiem chung phong thu Layer 2/3 tren Lab 99: PASS"
   fail=0
 else
-  bad "Kiem chung phong thu Layer 2/3 (Lab 02) tren Lab 99: FAIL"
+  bad "Kiem chung phong thu Layer 2/3 tren Lab 99: FAIL"
   fail=1
 fi
 

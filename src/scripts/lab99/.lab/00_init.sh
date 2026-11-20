@@ -32,7 +32,7 @@ fi
 
 mkdir -p "${PROJECT_LAB}/volumes/reports" "${PROJECT_LAB}/volumes/logs"
 
-note "Build va khoi dong Lab99 (khong dung subnet Lab02/03)"
+note "Build va khoi dong Lab99"
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" build
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" up -d --force-recreate
 sleep "$WAIT_BOOT"
