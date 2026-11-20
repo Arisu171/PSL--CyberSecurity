@@ -1,237 +1,446 @@
 {
   "lab_name": "lab99",
   "metadata": {
-    "title": "BÁO CÁO BÀI TẬP LỚN AN NINH MẠNG",
-    "subtitle": "HARDENING UBUNTU SERVER VÀ ĐÁNH GIÁ NĂNG LỰC PHÒNG THỦ ĐA TẦNG (LAB 02 - LAB 05, LAB 99)",
+    "title": "BÁO CÁO ĐỀ TÀI NGHIÊN CỨU AN NINH MẠNG",
+    "subtitle": "NGHIÊN CỨU, THIẾT KẾ VÀ ĐÁNH GIÁ NĂNG LỰC HỆ THỐNG PHÒNG THỦ THEO CHIỀU SÂU (DEFENSE-IN-DEPTH) KẾT HỢP GIA CỐ HỆ ĐIỀU HÀNH LINUX",
     "student": {
       "name": "Nguyễn Bảo Long",
       "id": "223001756",
       "class": "CNTT D2023B",
-      "course_code": "02 (x = 02)",
-      "group": "Nhóm 6 (y = 6)",
-      "network": "10.02.6.0/24 & 10.2.99.0/24"
+      "course_code": "02",
+      "group": "Nhóm 6",
+      "network": "10.2.99.0/24"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab99.docx"
   },
   "content": [
     {
       "type": "heading_1",
-      "text": "I. MỤC TIÊU VÀ PHẠM VI BÀI TẬP LỚN"
+      "text": "I. ĐẶT VẤN ĐỀ VÀ MỤC TIÊU NGHIÊN CỨU"
     },
     {
       "type": "paragraph",
-      "text": "Bài tập lớn môn An ninh mạng (Lab 99) hướng tới hai mục tiêu cốt lõi: (1) Xây dựng quy trình gia cố an ninh (Hardening) toàn diện cho hệ điều hành Ubuntu Server theo chuẩn thực hành tốt nhất (Best Practices) và đo lường sự thay đổi bề mặt tấn công trước - sau một cách định lượng; (2) Tích hợp và đánh giá năng lực phòng thủ của hệ thống trước 4 kịch bản tấn công mạng kinh điển đã thực nghiệm qua các bài thực hành chuyên đề từ Lab 02 đến Lab 05 (ARP Poisoning, DNS Cache Poisoning, DoS Flood/Amplification, và SQL Injection)."
+      "text": "Trong kỷ nguyên số hóa và điện toán đám mây hiện nay, các cuộc tấn công mạng nhằm vào hệ thống máy chủ doanh nghiệp ngày càng trở nên tinh vi, phối hợp đa tầng và phức hợp. Kẻ tấn công không chỉ khai thác đơn lẻ một lỗ hổng ứng dụng, mà thường thực hiện chuỗi hành vi bao gồm: trinh sát quét cổng, đầu độc giao thức mạng nội bộ, tấn công từ chối dịch vụ làm tê liệt tầng giao vận, khai thác lỗ hổng mã nguồn web để chiếm quyền điều khiển và leo thang đặc quyền trong hệ thống. Thực tế này chứng minh rằng việc áp dụng một giải pháp bảo mật đơn lẻ (chẳng hạn như chỉ cài đặt tường lửa hoặc chỉ dùng mật khẩu phức tạp) là hoàn toàn không đủ để bảo vệ an toàn cho hệ thống."
     },
     {
       "type": "paragraph",
-      "text": "Toàn bộ quá trình thực nghiệm được triển khai khép kín trên hạ tầng mạng ảo hóa Docker kết hợp máy chủ Ubuntu Server (vserver) trên VirtualBox, đảm bảo tính cô lập, an toàn tuyệt đối và có thể tái hiện chính xác kết quả."
+      "text": "Trước thách thức đó, đề tài nghiên cứu hướng tới ba mục tiêu khoa học và thực tiễn cốt lõi:"
+    },
+    {
+      "type": "bullet",
+      "text": "1. Xây dựng quy trình gia cố an ninh toàn diện (OS Hardening Framework) cho hệ điều hành Ubuntu Server tuân thủ các chuẩn bảo mật quốc tế (CIS Benchmark, Lynis Best Practices), nhằm giảm thiểu tối đa bề mặt tấn công khả dụng."
+    },
+    {
+      "type": "bullet",
+      "text": "2. Thiết kế và triển khai kiến trúc Phòng thủ theo chiều sâu (Defense-in-Depth) bao phủ toàn diện 6 phân lớp: Lớp liên kết dữ liệu (Data Link), Lớp mạng và phân giải tên miền (Network/DNS), Lớp giao vận sẵn sàng dịch vụ (Transport/DoS), Lớp ứng dụng & cơ sở dữ liệu (Application/WebSec), Lớp phòng thủ máy chủ chủ động (Host Defense/IPS), và Lớp kiểm toán giám định số (Host Auditing/Forensics)."
+    },
+    {
+      "type": "bullet",
+      "text": "3. Xây dựng môi trường thử nghiệm kiểm định an ninh độc lập (Security Assessment Testbed) để đo lường định lượng sự thu hẹp bề mặt tấn công trước - sau gia cố, đồng thời thực thi bộ kiểm thử xâm nhập thực nghiệm nhằm chứng minh năng lực tự vệ của hệ thống trước các kỹ thuật tấn công trọng yếu."
     },
     {
       "type": "heading_1",
-      "text": "II. KIẾN TRÚC MÔ HÌNH THỰC NGHIỆM"
+      "text": "II. MÔ HÌNH KIẾN TRÚC VÀ MÔI TRƯỜNG THỰC NGHIỆM"
     },
     {
       "type": "paragraph",
-      "text": "Mô hình thí nghiệm Lab 99 được thiết kế độc lập nhằm tránh xung đột tài nguyên với các bài thực hành trước, sử dụng subnet riêng biệt 10.2.99.0/24 bao gồm 2 thực thể container:"
+      "text": "Hệ thống thực nghiệm được thiết kế hoạt động trên một vùng mạng ảo hóa cô lập (Isolated Subnet) 10.2.99.0/24 nhằm đảm bảo an toàn tuyệt đối và có thể tái hiện chính xác kết quả đo kiểm, bao gồm 2 thực thể nút mạng chuyên biệt:"
     },
     {
       "type": "bullet",
-      "text": "lab99_target (10.2.99.10): Máy chủ mục tiêu chạy Ubuntu 22.04 LTS, đóng vai trò hệ thống chịu sự gia cố và thẩm định an toàn thông tin. Ban đầu máy chủ ở trạng thái mặc định (cổng SSH 22 mở, cho phép đăng nhập tài khoản root bằng mật khẩu, tường lửa tắt)."
+      "text": "Máy chủ mục tiêu (Target Node - lab99_target / 10.2.99.10): Đóng vai trò hệ thống dịch vụ lõi chạy trên Ubuntu 22.04 LTS, cung cấp dịch vụ quản trị từ xa OpenSSH và cổng ứng dụng Web nghiệp vụ (lab99_app trên cổng 8080/tcp). Đây là đối tượng thụ hưởng toàn bộ quy trình gia cố an ninh và chịu sự thẩm định khắt khe từ môi trường kiểm thử."
     },
     {
       "type": "bullet",
-      "text": "lab99_assessor (10.2.99.20): Máy kiểm định an ninh trang bị bộ công cụ quét cổng, thăm dò dịch vụ công khai (Nmap, Netcat, OpenSSH client, Python socket) đóng vai trò kẻ tấn công hoặc chuyên viên đánh giá độc lập."
+      "text": "Nút kiểm định an ninh độc lập (Assessor Node - lab99_assessor / 10.2.99.20): Đóng vai trò máy kiểm thử xâm nhập độc lập trong mạng, được trang bị đầy đủ công cụ thẩm định chuyên sâu (Nmap, Hping3, Scapy, Netcat, cURL, Python sockets) để phát động các kịch bản kiểm thử nghiệm thu hệ thống."
     },
     {
       "type": "image",
       "src": "bin/imgs/lab99/image1_docker_ps.png",
-      "caption": "Hình 1: Trạng thái khởi tạo các container và kiểm tra kết nối mạng nội bộ trên subnet 10.2.99.0/24"
+      "caption": "Hình 1: Trạng thái khởi tạo môi trường thực nghiệm độc lập và kiểm tra kết nối mạng nội bộ trên subnet 10.2.99.0/24"
     },
     {
       "type": "heading_1",
-      "text": "III. ĐÁNH GIÁ HIỆN TRẠNG TRƯỚC GIA CỐ (BASELINE AUDIT)"
+      "text": "III. ĐÁNH GIÁ HIỆN TRẠNG BỀ MẶT TẤN CÔNG BAN ĐẦU (BASELINE AUDIT)"
     },
     {
       "type": "paragraph",
-      "text": "Trước khi triển khai các chính sách bảo mật, hệ thống được kích hoạt quy trình kiểm toán điểm an ninh ban đầu và rà soát bề mặt tấn công mạng:"
+      "text": "Trước khi triển khai các biện pháp gia cố, hệ thống mục tiêu ở trạng thái cài đặt mặc định được kích hoạt quy trình kiểm toán điểm an ninh ban đầu và trinh sát dịch vụ mạng nhằm thiết lập đường cơ sở (Baseline Metrics):"
     },
     {
       "type": "image",
       "src": "bin/imgs/lab99/image2_metrics_before.png",
-      "caption": "Hình 2: Bộ chỉ số an toàn ban đầu (metrics_before) đạt 5/12 điểm với nhiều điểm yếu cấu hình nghiêm trọng"
+      "caption": "Hình 2: Bộ chỉ số an toàn ban đầu (metrics_before.txt) chỉ đạt 5/12 tiêu chuẩn với nhiều cấu hình rủi ro cao"
     },
     {
       "type": "image",
       "src": "bin/imgs/lab99/image3_nmap_before.png",
-      "caption": "Hình 3: Kết quả quét Nmap bề mặt trước gia cố ghi nhận cổng 22/tcp mở dịch vụ OpenSSH"
+      "caption": "Hình 3: Kết quả quét Nmap ghi nhận dịch vụ OpenSSH 8.9p1 trên cổng 22/tcp và ứng dụng Web trên cổng 8080/tcp mở công khai"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image4_surface_before.png",
+      "caption": "Hình 4: Đánh giá chi tiết bề mặt xác thực ghi nhận chính sách đăng nhập root và chứng thực mật khẩu tiềm ẩn nguy cơ brute-force"
     },
     {
       "type": "paragraph",
-      "text": "Các rủi ro an ninh nổi cộm được nhận diện trong pha Baseline:"
+      "text": "Kết quả thẩm định hiện trạng Baseline chỉ ra 5 nhóm rủi ro an ninh nghiêm trọng của hệ thống mặc định:"
     },
     {
       "type": "bullet",
-      "text": "Cổng quản trị SSH lắng nghe tại cổng mặc định 22/tcp, dễ dàng bị rà quét tự động bởi botnet."
+      "text": "1. Bề mặt cổng quản trị mở: Dịch vụ OpenSSH lắng nghe trên cổng tiêu chuẩn 22/tcp, dễ dàng bị nhận diện và quét tự động bởi botnet."
     },
     {
       "type": "bullet",
-      "text": "Cho phép đăng nhập trực tiếp tài khoản root (PermitRootLogin yes) và chứng thực bằng mật khẩu (PasswordAuthentication yes), tiềm ẩn nguy cơ bị dò quét mật khẩu (brute-force / dictionary attack)."
+      "text": "2. Cơ chế xác thực yếu: Cho phép đăng nhập trực tiếp bằng tài khoản đặc quyền tối cao (PermitRootLogin yes) và chứng thực qua mật khẩu (PasswordAuthentication yes), tạo điều kiện cho các cuộc tấn công dò quét từ điển (Dictionary / Brute-force attacks)."
     },
     {
       "type": "bullet",
-      "text": "Tường lửa UFW chưa được kích hoạt; dịch vụ chống tấn công vét cạn Fail2ban và hệ thống giám sát Auditd ở trạng thái không hoạt động."
+      "text": "3. Thiếu tường lửa và cơ chế chống lạm dụng: Tường lửa UFW chưa được bật (Status: inactive); dịch vụ tự động cô lập IP vi phạm Fail2ban không hoạt động."
     },
     {
       "type": "bullet",
-      "text": "Cơ chế bảo vệ chống IP spoofing của nhân Linux (rp_filter) bị vô hiệu hóa (giá trị 0)."
+      "text": "4. Nhân Linux chưa tối ưu hóa phòng thủ: Tính năng kiểm tra đường dẫn ngược chống giả mạo IP (rp_filter) bị vô hiệu hóa (giá trị 0)."
+    },
+    {
+      "type": "bullet",
+      "text": "5. Thiếu cơ chế giám sát truy vết số: Dịch vụ kiểm toán nhân Linux Auditd chưa nạp quy tắc giám sát tệp tin nhạy cảm, không có khả năng phát hiện can thiệp tệp tin hệ thống."
     },
     {
       "type": "heading_1",
-      "text": "IV. CÁC BIỆN PHÁP GIA CỐ HỆ THỐNG ĐÃ ÁP DỤNG"
+      "text": "IV. QUY TRÌNH GIA CỐ HỆ THỐNG ĐA TẦNG (SYSTEM HARDENING FRAMEWORK)"
     },
     {
       "type": "paragraph",
-      "text": "Hệ thống áp dụng kịch bản gia cố toàn diện (03_harden.sh) thông qua các drop-in configuration chuẩn của Ubuntu:"
+      "text": "Nhằm khắc phục triệt để các rủi ro nêu trên, hệ thống triển khai kịch bản gia cố tự động hóa toàn diện (03_harden.sh) thông qua các tệp tin drop-in configuration chuẩn của hệ điều hành Linux:"
     },
     {
       "type": "bullet",
-      "text": "Gia cố OpenSSH (/etc/ssh/sshd_config.d/99-lab99-hardening.conf): Đổi cổng quản trị sang 2222, cấm tuyệt đối root login (PermitRootLogin no), vô hiệu hóa đăng nhập mật khẩu (PasswordAuthentication no), chỉ cho phép đăng nhập qua khóa bất đối xứng ED25519 (PubkeyAuthentication yes) và giới hạn danh sách tài khoản hợp lệ (AllowUsers labuser)."
+      "text": "1. Gia cố OpenSSH (/etc/ssh/sshd_config.d/99-lab99-hardening.conf): Di chuyển cổng dịch vụ sang cổng tùy chỉnh 2222, cấm tuyệt đối đăng nhập tài khoản root (PermitRootLogin no), vô hiệu hóa chứng thực mật khẩu (PasswordAuthentication no), chỉ chấp nhận khóa mã hóa phi đối xứng ED25519 (PubkeyAuthentication yes) và giới hạn danh sách người dùng được phép truy cập (AllowUsers labuser)."
     },
     {
       "type": "bullet",
-      "text": "Tường lửa UFW: Thiết lập chính sách mặc định chặn toàn bộ lưu lượng vào (Default incoming deny), cho phép lưu lượng ra (Default outgoing allow), và chỉ mở duy nhất cổng TCP 2222 phục vụ quản trị."
+      "text": "2. Thiết lập Tường lửa UFW: Triển khai chính sách 'Mặc định từ chối' (Default Incoming Deny, Default Outgoing Allow), thiết lập quy tắc chỉ mở duy nhất cổng TCP 2222 phục vụ quản trị, tự động chặn lọc mọi luồng lưu lượng thăm dò trái phép."
     },
     {
       "type": "bullet",
-      "text": "Cơ chế tự động ngăn chặn tấn công Fail2ban (/etc/fail2ban/jail.local): Kích hoạt giám sát jail sshd với cơ chế backend polling giám sát /var/log/auth.log, tự động cô lập địa chỉ IP vi phạm sau 3 lần thử sai."
+      "text": "3. Hệ thống phòng thủ chủ động Fail2ban (/etc/fail2ban/jail.local): Kích hoạt phân hệ giám sát jail sshd với cơ chế backend polling kiểm tra nhật ký /var/log/auth.log, tự động kích hoạt luật iptables DROP cô lập các IP thử sai mật khẩu quá 3 lần."
     },
     {
       "type": "bullet",
-      "text": "Gia cố nhân Linux Sysctl (/etc/sysctl.d/99-lab99-hardening.conf): Bật kiểm tra đường dẫn ngược chống giả mạo IP nguồn (net.ipv4.conf.all.rp_filter = 1), kích hoạt TCP SYN Cookies chống SYN Flood (net.ipv4.tcp_syncookies = 1), và kích hoạt ngẫu nhiên hóa không gian địa chỉ bộ nhớ chống khai thác tràn bộ đệm (kernel.randomize_va_space = 2)."
+      "text": "4. Tối ưu hóa tham số an ninh nhân Linux (/etc/sysctl.d/99-lab99-hardening.conf): Bật kiểm tra tính hợp lệ đường dẫn ngược chống IP Spoofing (net.ipv4.conf.all.rp_filter = 1), kích hoạt TCP SYN Cookies chống tràn hàng đợi kết nối (net.ipv4.tcp_syncookies = 1), và bật chế độ ngẫu nhiên hóa không gian địa chỉ bộ nhớ mức cao nhất (kernel.randomize_va_space = 2)."
     },
     {
       "type": "bullet",
-      "text": "Chính sách mật khẩu PAM & Cập nhật tự động: Cấu hình /etc/security/pwquality.conf yêu cầu độ phức tạp mật khẩu cao; kích hoạt unattended-upgrades tự động vá lỗ hổng bảo mật định kỳ."
+      "text": "5. Chuẩn hóa độ phức tạp mật khẩu PAM: Cấu hình /etc/security/pwquality.conf bắt buộc độ dài tối thiểu 12 ký tự, yêu cầu đầy đủ 4 nhóm ký tự (chữ hoa, chữ thường, chữ số, ký tự đặc biệt) ngăn chặn đặt mật khẩu yếu."
+    },
+    {
+      "type": "bullet",
+      "text": "6. Cơ chế vá lỗi tự động: Kích hoạt dịch vụ unattended-upgrades tự động cập nhật các gói bản vá an ninh định kỳ từ máy chủ bảo mật của Ubuntu."
+    },
+    {
+      "type": "bullet",
+      "text": "7. Giám sát toàn vẹn tệp tin Linux Kernel Auditd: Thiết lập các quy tắc giám sát tệp tin nhạy cảm (/etc/passwd và /etc/ssh/sshd_config) với các nhãn giám định identity_tampering và ssh_config_tampering phục vụ điều tra sự cố số."
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image4_harden_pass.png",
-      "caption": "Hình 4: Toàn bộ quy trình thực thi kịch bản gia cố 03_harden.sh hoàn thành xuất sắc (PASS)"
+      "src": "bin/imgs/lab99/image5_harden_pass.png",
+      "caption": "Hình 5: Toàn bộ quy trình thực thi kịch bản gia cố hệ thống 03_harden.sh hoàn thành xuất sắc (7/7 modules PASS)"
     },
     {
       "type": "heading_1",
-      "text": "V. XÁC MINH VÀ PHÂN TÍCH SO SÁNH HIỆU QUẢ GIA CỐ"
+      "text": "V. THẨM ĐỊNH VÀ ĐỐI CHIẾU ĐỊNH LƯỢNG SAU GIA CỐ"
     },
     {
       "type": "paragraph",
-      "text": "Sau khi áp dụng gia cố, các bài kiểm tra độc lập từ máy thẩm định lab99_assessor được thực thi nhằm xác thực tính hiệu lực của từng cơ chế phòng thủ:"
+      "text": "Sau khi áp dụng các chính sách gia cố, quy trình thẩm định độc lập được thực thi trên máy chủ mục tiêu và máy kiểm định Assessor để xác thực tính hiệu lực thực tế của từng cơ chế:"
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image5_sshd_T_after.png",
-      "caption": "Hình 5: Xác minh cấu hình OpenSSH hiệu lực thực tế qua lệnh sshd -T (cổng 2222, không root, không password)"
+      "src": "bin/imgs/lab99/image6_sshd_T_after.png",
+      "caption": "Hình 6: Xác minh cấu hình OpenSSH hiệu lực thực tế qua lệnh sshd -T (Cổng 2222, không root, không password)"
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image6_ufw_fail2ban.png",
-      "caption": "Hình 6: Trạng thái kích hoạt của tường lửa UFW và tiến trình Fail2ban giám sát jail sshd"
+      "src": "bin/imgs/lab99/image7_ufw_fail2ban.png",
+      "caption": "Hình 7: Trạng thái kích hoạt của tường lửa UFW (chỉ mở 2222/tcp) và tiến trình Fail2ban giám sát jail sshd"
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image7_nmap_after.png",
-      "caption": "Hình 7: Nmap xác nhận cổng 22/tcp đã bị tường lửa lọc (filtered) và chứng thực SSH 2222 thành công với SSH key"
+      "src": "bin/imgs/lab99/image8_nmap_after.png",
+      "caption": "Hình 8: Rà quét từ Assessor xác nhận cổng 22/tcp bị lọc hoàn toàn (filtered), đăng nhập SSH cổng 2222 bằng SSH key thành công"
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image8_compare_report.png",
-      "caption": "Hình 8: Báo cáo so sánh định lượng điểm an ninh tăng vọt từ 5 lên 12/12 điểm (Tăng +7 điểm tuyệt đối)"
+      "src": "bin/imgs/lab99/image9_compare_report.png",
+      "caption": "Hình 9: Báo cáo đối chiếu định lượng Before vs After: Điểm an ninh tăng từ 5/12 lên 12/12 điểm (Tăng +7 điểm, đạt 100%)"
     },
     {
       "type": "heading_2",
-      "text": "Bảng tổng hợp đối chiếu chỉ số an toàn trước và sau gia cố"
+      "text": "Bảng tổng hợp đối chiếu định lượng chỉ số an toàn trước và sau gia cố"
     },
     {
       "type": "table",
-      "headers": ["Tiêu chí kiểm định", "Trước Hardening (Baseline)", "Sau Hardening", "Đánh giá an toàn"],
+      "headers": [
+        "Tiêu chí kiểm định",
+        "Hiện trạng ban đầu (Baseline)",
+        "Sau khi gia cố (Hardened)",
+        "Đánh giá an toàn & Hiệu lực"
+      ],
       "rows": [
-        ["Cổng dịch vụ SSH", "22 (mặc định)", "2222 (tùy chỉnh)", "Tránh các công cụ quét tự động"],
-        ["PermitRootLogin", "yes (nguy hiểm)", "no (an toàn)", "Loại bỏ nguy cơ chiếm quyền root từ xa"],
-        ["PasswordAuthentication", "yes (dễ brute-force)", "no (vô hiệu hóa)", "Chỉ chấp nhận khóa mã hóa ED25519"],
-        ["Danh sách người dùng SSH", "Không giới hạn", "AllowUsers labuser", "Kiểm soát truy cập đặc quyền tối thiểu"],
-        ["Tường lửa UFW", "inactive (tắt)", "active (bật, deny all in)", "Thu hẹp bề mặt tấn công tối đa"],
-        ["Dịch vụ Fail2ban", "inactive", "active (jail sshd)", "Tự động khóa IP vi phạm dò mật khẩu"],
-        ["Giám sát Auditd", "no (không ghi vết)", "yes (ghi vết file trọng yếu)", "Phục vụ điều tra sau sự cố (Forensics)"],
-        ["Vá lỗi tự động", "yes", "yes", "Đảm bảo các bản vá an ninh mới nhất"],
-        ["Chống giả mạo IP (rp_filter)", "0 (tắt)", "1 (chế độ nghiêm ngặt)", "Ngăn chặn các gói tin IP spoofing"],
-        ["Chống SYN Flood (syncookies)", "1", "1", "Bảo vệ hàng đợi kết nối TCP"],
-        ["Ngẫu nhiên hóa bộ nhớ (ASLR)", "2", "2", "Ngăn chặn tấn công khai thác bộ đệm"],
-        ["Tổng điểm bảo mật Lab 99", "5 / 12 điểm", "12 / 12 điểm (100%)", "Đạt chuẩn gia cố an toàn cao nhất"]
+        [
+          "Cổng dịch vụ SSH",
+          "22 (mặc định)",
+          "2222 (tùy chỉnh)",
+          "Thu hẹp bề mặt rà quét của botnet tự động"
+        ],
+        [
+          "Đăng nhập tài khoản root",
+          "yes (rủi ro cao)",
+          "no (vô hiệu hóa)",
+          "Triệt tiêu nguy cơ chiếm đoạt quyền root từ xa"
+        ],
+        [
+          "Chứng thực bằng mật khẩu",
+          "yes (dễ bị vét cạn)",
+          "no (vô hiệu hóa)",
+          "Chỉ chấp nhận khóa mã hóa ED25519"
+        ],
+        [
+          "Kiểm soát danh sách truy cập",
+          "Không giới hạn",
+          "AllowUsers labuser",
+          "Thực thi nguyên tắc đặc quyền tối thiểu (Least Privilege)"
+        ],
+        [
+          "Tường lửa UFW",
+          "inactive (tắt)",
+          "active (chỉ mở 2222/tcp)",
+          "Thiết lập chính sách mặc định chặn toàn bộ lưu lượng vào"
+        ],
+        [
+          "Phòng thủ chủ động Fail2ban",
+          "inactive (tắt)",
+          "active (jail sshd)",
+          "Tự động phát hiện và khóa IP vi phạm dò mật khẩu"
+        ],
+        [
+          "Giám sát tệp tin nhạy cảm Auditd",
+          "no (không giám sát)",
+          "yes (nạp rules passwd/sshd)",
+          "Lưu trữ bằng chứng số phục vụ điều tra sau sự cố (Forensics)"
+        ],
+        [
+          "Cập nhật bản vá tự động",
+          "yes",
+          "yes",
+          "Đảm bảo các bản vá an ninh mới nhất luôn được áp dụng"
+        ],
+        [
+          "Chống giả mạo IP (rp_filter)",
+          "0 (vô hiệu hóa)",
+          "1 (chế độ nghiêm ngặt)",
+          "Bảo vệ hệ thống trước các gói tin IP spoofing"
+        ],
+        [
+          "Chống SYN Flood (syncookies)",
+          "1",
+          "1",
+          "Duy trì khả năng phục vụ kết nối TCP khi bị flood"
+        ],
+        [
+          "Ngẫu nhiên hóa bộ nhớ (ASLR)",
+          "2",
+          "2 (ASLR toàn phần)",
+          "Ngăn chặn các kỹ thuật khai thác tràn bộ đệm (ROP/Buffer Overflow)"
+        ],
+        [
+          "Tổng điểm bảo mật Lab 99",
+          "5 / 12 điểm (41.6%)",
+          "12 / 12 điểm (100%)",
+          "Đạt chuẩn an ninh tối đa, loại bỏ hoàn toàn các điểm yếu ban đầu"
+        ]
       ]
     },
     {
       "type": "heading_1",
-      "text": "VI. ĐÁNH GIÁ NĂNG LỰC PHÒNG THỦ ĐA TẦNG (LAB 02 - LAB 05)"
+      "text": "VI. THỰC NGHIỆM KIỂM THỬ NĂNG LỰC PHÒNG THỦ THEO CHIỀU SÂU (DEFENSE-IN-DEPTH BENCHMARKS)"
     },
     {
       "type": "paragraph",
-      "text": "Nhằm chứng minh năng lực phòng thủ toàn diện của hệ thống trong thực tế, chuỗi các kịch bản tấn công nguy hiểm từ các bài thực hành chuyên đề được phát động để kiểm tra khả năng tự vệ của các lớp bảo mật:"
+      "text": "Để chứng minh tính hiệu lực thực tế của kiến trúc phòng thủ đa tầng trong môi trường vận hành, nút kiểm định Assessor (10.2.99.20) phát động 7 kịch bản kiểm thử xâm nhập thực nghiệm nhằm đánh giá năng lực tự vệ của hệ thống từ tầng mạng, tầng hạ tầng dịch vụ, tầng giao vận, tầng ứng dụng đến cơ chế tự vệ máy chủ:"
+    },
+    {
+      "type": "heading_2",
+      "text": "1. Khảo sát khả năng chống giả mạo tầng liên kết dữ liệu (Data Link Layer - ARP Spoofing Mitigation)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế tấn công mô phỏng: Máy kiểm định Assessor đóng vai trò kẻ tấn công cùng subnet, phát tán luồng gói tin ARP Reply giả mạo (Fake ARP Reply) nhằm đầu độc bảng ánh xạ IP-MAC trên máy chủ Target, qua đó cố gắng chuyển hướng lưu lượng để thực hiện nghe lén (Man-In-The-Middle sniffing)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Máy chủ Target được thiết lập chính sách bảo vệ bảng ARP tĩnh (Static ARP Binding) kết hợp tham số nhân net.ipv4.conf.all.rp_filter = 1 và arp_ignore = 1. Kết quả kiểm tra xác nhận ánh xạ của Assessor được gán cờ PERMANENT vĩnh viễn trong bảng ARP; các gói tin giả mạo bị nhân Linux loại bỏ hoàn toàn, bảng phân giải địa chỉ không bị thay đổi."
     },
     {
       "type": "image",
-      "src": "bin/imgs/lab99/image9_defense_4layers.png",
-      "caption": "Hình 9: Bảng tổng kết kết quả kiểm chứng phòng vệ đa tầng độc lập đạt tỷ lệ PASS 100%"
+      "src": "bin/imgs/lab99/image10_verify_arp.png",
+      "caption": "Hình 10: Thực nghiệm kiểm thử nghiệm thu tầng liên kết: Cơ chế Static ARP và rp_filter bảo vệ toàn vẹn bảng ánh xạ (LAB02_VERIFY=PASS)"
     },
     {
       "type": "heading_2",
-      "text": "1. Lớp 2/3 (Liên kết & Mạng) - Tấn công ARP Spoofing (Lab 02)"
+      "text": "2. Khảo sát năng lực triệt tiêu tấn công đầu độc hạ tầng tên miền (DNS Cache Poisoning & Reflection Mitigation)"
     },
     {
       "type": "paragraph",
-      "text": "Kẻ tấn công sử dụng arpspoof giả mạo địa chỉ MAC của Gateway để đánh cắp lưu lượng và thực hiện nghe lén (MITM sniffing). Biện pháp phòng vệ bằng cơ chế gán bảng ARP tĩnh (Static ARP binding qua 04_fix_server.sh) đã hoàn toàn vô hiệu hóa khả năng đầu độc bảng ARP, bảo vệ toàn vẹn luồng dữ liệu truyền tải."
+      "text": "Cơ chế tấn công mô phỏng: Kẻ tấn công tìm cách lợi dụng cổng dịch vụ DNS trên máy chủ để thực hiện tấn công khuếch đại (DNS Amplification) hoặc gửi các phản hồi giả mạo để đầu độc bộ nhớ đệm phân giải tên miền (Kaminsky DNS Cache Poisoning)."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Máy chủ Target sử dụng bộ phân giải nội bộ cô lập 127.0.0.11, hoàn toàn đóng cổng DNS ra ngoài mạng công cộng (loại bỏ hoàn toàn vai trò phản xạ tấn công). Đồng thời, dải cổng nguồn ephemeral được mở rộng lên 28,231 cổng (net.ipv4.ip_local_port_range từ 32768 đến 60999), kết hợp cơ chế ngẫu nhiên hóa cổng nguồn Source Port Randomization (SPR) với 16-bit Transaction ID tạo không gian tìm kiếm xấp xỉ 2^31 khả năng, triệt tiêu khả năng đoán trúng gói tin của kẻ tấn công. Kiểm thử phân giải ra ngoài cho tên miền example.com vẫn đảm bảo tính toàn vẹn và trả về địa chỉ IP chính thức."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image11_verify_dns.png",
+      "caption": "Hình 11: Thực nghiệm kiểm thử nghiệm thu hạ tầng DNS: SPR mở rộng 28,231 cổng triệt tiêu nguy cơ đầu độc đệm (LAB03_VERIFY=PASS)"
     },
     {
       "type": "heading_2",
-      "text": "2. Lớp dịch vụ hạ tầng - Tấn công Kaminsky DNS Poisoning (Lab 03)"
+      "text": "3. Khảo sát độ sẵn sàng dịch vụ dưới tải tấn công từ chối dịch vụ tầng giao vận (Transport Layer - DoS SYN/ICMP Flood Mitigation)"
     },
     {
       "type": "paragraph",
-      "text": "Kẻ tấn công gửi hàng nghìn truy vấn tên miền ngẫu nhiên kèm gói tin trả lời DNS giả mạo Transaction ID để đầu độc bộ nhớ đệm máy chủ DNS đệ quy. Biện pháp nâng cấp cơ chế Source Port Randomization (SPR) mở rộng không gian tìm kiếm từ 16-bit (Transaction ID) lên 32-bit (kết hợp Port nguồn ngẫu nhiên), khiến xác suất thành công của kẻ tấn công giảm xuống mức xấp xỉ bằng không."
+      "text": "Cơ chế tấn công mô phỏng: Máy Assessor sử dụng công cụ hping3 phát động một luồng bão gói tin TCP SYN Flood cực lớn với cờ ngẫu nhiên địa chỉ IP nguồn (--flood --rand-source) hướng thẳng vào cổng quản trị 2222 của Target trong 4 giây liên tục, nhằm làm tràn ngập hàng đợi kết nối nửa mở (SYN Backlog) và gây tê liệt dịch vụ."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Nhân Linux trên Target đã được cấu hình kích hoạt TCP SYN Cookies (net.ipv4.tcp_syncookies = 1) kết hợp mở rộng kích thước hàng đợi net.ipv4.tcp_max_syn_backlog = 2048. Khi hàng đợi đầy, máy chủ tự động mã hóa thông tin trạng thái kết nối vào số thứ tự ban đầu (Initial Sequence Number) của gói SYN-ACK mà không cần cấp phát bộ nhớ. Thử nghiệm kết nối hợp lệ trong thời gian bị flood cho thấy 3/3 lần kết nối đều thành công; sau đó tấn công ICMP Flood cũng không làm gián đoạn phản hồi của hệ thống."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image12_verify_dos.png",
+      "caption": "Hình 12: Thực nghiệm kiểm thử nghiệm thu tầng giao vận: Dịch vụ duy trì đáp ứng 100% trong tâm bão SYN Flood nhờ TCP SYN Cookies (LAB04_VERIFY=PASS)"
     },
     {
       "type": "heading_2",
-      "text": "3. Lớp sẵn sàng dịch vụ - Tấn công DoS SYN/ICMP Flood & DNS Amplification (Lab 04)"
+      "text": "4. Khảo sát an toàn tầng ứng dụng Web & Cơ sở dữ liệu trước lỗ hổng SQL Injection"
     },
     {
       "type": "paragraph",
-      "text": "Máy chủ bị tấn công dồn dập bởi luồng gói tin TCP SYN Flood làm đầy hàng đợi kết nối và luồng phản xạ DNS Amplification khuếch đại lưu lượng gấp hơn 20 lần. Biện pháp kích hoạt TCP SYN Cookies kết hợp quy tắc giới hạn tần số gói tin (iptables rate limiting) trên tường lửa đã giúp máy chủ duy trì trạng thái đáp ứng bình thường cho người dùng hợp lệ mà không bị sập dịch vụ."
+      "text": "Cơ chế tấn công mô phỏng: Kẻ tấn công gửi chuỗi truy vấn độc hại chứa mệnh đề logic hằng đúng (Tautology Bypass: admin' OR '1'='1) nhằm vượt qua cơ chế kiểm tra tài khoản và trích xuất trái phép dữ liệu nhạy cảm của người dùng."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Đề tài tiến hành kiểm thử đối chứng trực tiếp giữa 2 cơ chế xử lý trên ứng dụng Web thực nghiệm (lab99_app):"
+    },
+    {
+      "type": "bullet",
+      "text": "Endpoint chưa áp dụng phòng thủ (/sqli_vuln): Mã nguồn nối chuỗi trực tiếp giá trị người dùng nhập vào câu lệnh SQL. Kết quả tấn công thành công rực rỡ, toàn bộ dữ liệu 3 tài khoản trong bảng users bị trích xuất công khai."
+    },
+    {
+      "type": "bullet",
+      "text": "Endpoint đã áp dụng phòng thủ (/sqli_safe): Tái cấu trúc truy vấn sử dụng cơ chế Parameterized Prepared Statements (truy vấn tham số hóa). Cú pháp câu lệnh SQL được biên dịch trước; chuỗi độc hại người dùng nhập được nhân cơ sở dữ liệu đối xử thuần túy như một giá trị chuỗi văn bản, triệt tiêu hoàn toàn khả năng thay đổi cấu trúc truy vấn. Kết quả trả về an toàn, không có dữ liệu nào bị rò rỉ."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image13_verify_sqli.png",
+      "caption": "Hình 13: Thực nghiệm kiểm thử tầng ứng dụng: Prepared Statements vô hiệu hóa hoàn toàn chuỗi tấn công SQL Injection (LAB05_VERIFY=PASS)"
     },
     {
       "type": "heading_2",
-      "text": "4. Lớp ứng dụng Web & Cơ sở dữ liệu - Tấn công SQL Injection (Lab 05)"
+      "text": "5. Khảo sát an toàn tầng ứng dụng trước lỗ hổng thực thi lệnh hệ điều hành (OS Command Injection)"
     },
     {
       "type": "paragraph",
-      "text": "Tin tặc thực hiện chèn các chuỗi truy vấn độc hại (Tautology Bypass, UNION-based dump database, Time-based Blind injection, Stacked Queries INSERT). Biện pháp tái cấu trúc mã nguồn backend sử dụng Parameterized Prepared Statements (PDO) đã tách biệt hoàn toàn giữa cú pháp câu lệnh SQL và giá trị tham số người dùng nhập, triệt tiêu hoàn toàn bề mặt khai thác SQLi."
+      "text": "Cơ chế tấn công mô phỏng: Kẻ tấn công lợi dụng tính năng kiểm tra mạng trên ứng dụng web, chèn thêm ký tự điều khiển lệnh shell (chấm phẩy: 127.0.0.1; whoami) nhằm buộc máy chủ thực thi các câu lệnh hệ thống tùy ý với quyền hạn cao nhất."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Thử nghiệm đối chứng được thực hiện trên ứng dụng web:"
+    },
+    {
+      "type": "bullet",
+      "text": "Endpoint dễ bị tổn thương (/cmd_vuln): Thực thi qua hàm shell hệ thống mà không lọc đầu vào. Kẻ tấn công thực thi thành công lệnh whoami và nhận về kết quả 'root', chứng minh hệ thống đã bị chiếm quyền điều khiển hoàn toàn."
+    },
+    {
+      "type": "bullet",
+      "text": "Endpoint đã được bảo vệ (/cmd_safe): Triển khai cơ chế làm sạch dữ liệu đầu vào sử dụng danh sách trắng biểu thức chính quy (Whitelist Regex: chỉ chấp nhận ký tự số và dấu chấm tạo thành địa chỉ IP hợp lệ), đồng thời cấu hình shell=False khi gọi tiến trình con. Khi phát hiện ký tự đặc biệt, ứng dụng lập tức từ chối và phản hồi mã lỗi HTTP 400 Bad Request, bảo vệ an toàn cho máy chủ."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image14_verify_rce.png",
+      "caption": "Hình 14: Thực nghiệm kiểm thử OS Command Injection: Whitelist Regex chặn đứng hành vi chèn lệnh điều khiển trái phép (LAB05_VERIFY=PASS)"
+    },
+    {
+      "type": "heading_2",
+      "text": "6. Khảo sát năng lực phòng thủ máy chủ chủ động (Host Defense - Automated SSH Brute-Force Mitigation)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế tấn công mô phỏng: Từ máy Assessor (10.2.99.20), kẻ tấn công thực hiện kỹ thuật rà quét và thử mật khẩu tự động (Password Spraying / Brute-Force Simulation) bằng cách gửi liên tục 5 yêu cầu đăng nhập với thông tin xác thực sai hướng vào cổng quản trị 2222 của Target."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Dịch vụ phòng thủ chủ động Fail2ban liên tục quét tệp nhật ký xác thực /var/log/auth.log thông qua bộ lọc jail sshd. Ngay khi số lần thử sai vượt ngưỡng cho phép (maxretry = 3), Fail2ban tự động tương tác với tường lửa iptables của nhân Linux chèn luật DROP đối với địa chỉ IP vi phạm. Kết quả thực nghiệm xác nhận IP 10.2.99.20 đã bị đưa vào danh sách Banned IP list; toàn bộ các kết nối tiếp theo từ máy kiểm định đều bị chặn đứng ngay tại tầng mạng."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image15_verify_fail2ban.png",
+      "caption": "Hình 15: Thực nghiệm phòng thủ chủ động: Fail2ban tự động phát hiện tấn công brute-force và cô lập IP 10.2.99.20 (FAIL2BAN_VERIFY=PASS)"
+    },
+    {
+      "type": "heading_2",
+      "text": "7. Khảo sát năng lực giám sát toàn vẹn tệp tin và trích xuất bằng chứng số (Host Auditing & Digital Forensics)"
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế tấn công mô phỏng: Kẻ tấn công sau khi thâm nhập vào hệ thống tìm cách sửa đổi các tệp tin cấu hình trọng yếu (cụ thể là tệp tin định danh người dùng /etc/passwd) nhằm tạo tài khoản ẩn hoặc thay đổi thuộc tính phân quyền."
+    },
+    {
+      "type": "paragraph",
+      "text": "Cơ chế phòng vệ và thẩm định thực nghiệm: Khung giám sát nhân Linux Kernel Auditd được nạp các quy tắc theo dõi chặt chẽ tệp tin /etc/passwd với nhãn kiểm định identity_tampering. Khi thao tác can thiệp tệp tin diễn ra (thao tác touch /etc/passwd), Audit daemon lập tức phát hiện và ghi lại một bản ghi kiểm toán hoàn chỉnh trong nhật ký số. Sử dụng công cụ ausearch trích xuất thành công chi tiết sự kiện bao gồm: mã gọi hệ thống (syscall openat), định danh tiến trình (comm=\"touch\"), đường dẫn thực thi (exe=\"/usr/bin/touch\"), định danh người dùng (UID=\"root\") và nhãn thời gian thực tế, tạo lập chứng cứ pháp lý số không thể chối bỏ phục vụ công tác điều tra sự cố (Digital Forensics)."
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image16_verify_auditd.png",
+      "caption": "Hình 16: Thực nghiệm giám sát truy vết: Linux Kernel Auditd bắt trọn sự kiện can thiệp tệp tin nhạy cảm và trích xuất bằng chứng số chi tiết (AUDITD_VERIFY=PASS)"
+    },
+    {
+      "type": "heading_2",
+      "text": "Tổng kết ma trận kiểm chứng nghiệm thu hệ sinh thái phòng thủ đa tầng"
+    },
+    {
+      "type": "paragraph",
+      "text": "Bảng ma trận tổng hợp kết quả kiểm chứng thực nghiệm độc lập từ máy kiểm định Assessor khẳng định tính toàn diện và hiệu lực 100% của hệ sinh thái phòng thủ theo chiều sâu đã xây dựng:"
+    },
+    {
+      "type": "image",
+      "src": "bin/imgs/lab99/image17_summary_matrix.png",
+      "caption": "Hình 17: Ma trận tổng kết nghiệm thu hệ sinh thái phòng thủ theo chiều sâu đạt tỷ lệ thành công PASS tuyệt đối trên tất cả các lớp"
     },
     {
       "type": "heading_1",
-      "text": "VII. KẾT LUẬN VÀ BÀI HỌC KINH NGHIỆM"
+      "text": "VII. ĐÁNH GIÁ TỔNG KẾT VÀ BÀI HỌC KỸ THUẬT"
     },
     {
       "type": "paragraph",
-      "text": "Thông qua quá trình triển khai thực tế bài tập lớn Lab 99, sinh viên đã nắm vững nguyên lý thiết lập cơ chế 'Phòng thủ theo chiều sâu' (Defense-in-Depth). Không có một giải pháp đơn lẻ nào có thể bảo vệ an toàn tuyệt đối cho hệ thống, mà cần sự phối hợp chặt chẽ giữa các tầng:"
+      "text": "Thông qua quá trình nghiên cứu, thiết kế, triển khai và kiểm chứng thực nghiệm đề tài Lab 99, sinh viên đã rút ra các kết luận khoa học và bài học kinh nghiệm sâu sắc về an toàn thông tin hệ thống:"
     },
     {
       "type": "bullet",
-      "text": "Gia cố bề mặt hệ điều hành (OS Hardening) giúp giảm thiểu tối đa các điểm yếu cấu hình và dịch vụ dư thừa."
+      "text": "1. Tính tất yếu của mô hình Phòng thủ theo chiều sâu (Defense-in-Depth): An toàn thông tin không phải là một trạng thái tĩnh hay một sản phẩm công nghệ đơn lẻ, mà là một quy trình kiến trúc đa lớp. Việc phân tách và thiết lập các rào cản độc lập ở từng tầng (Liên kết, Mạng, Giao vận, Ứng dụng, Máy chủ và Giám sát) đảm bảo rằng nếu kẻ tấn công vượt qua được một lớp phòng thủ, các lớp tiếp theo vẫn duy trì khả năng ngăn chặn, làm chậm đà tiến công và cô lập nguy cơ."
     },
     {
       "type": "bullet",
-      "text": "Cơ chế bảo vệ hạ tầng mạng và giao thức truyền thông ngăn chặn kẻ tấn công can thiệp vào đường truyền và gây cạn kiệt tài nguyên."
+      "text": "2. Vai trò nền tảng của Gia cố hệ điều hành (OS Hardening): Một hệ thống ứng dụng an toàn không thể vận hành trên một nền tảng hệ điều hành yếu kém. Việc áp dụng chuẩn hóa các chính sách hạn chế đặc quyền, đổi cổng dịch vụ, khóa chứng thực mật khẩu và tối ưu tham số nhân Linux là bước đi đầu tiên mang tính sống còn giúp thu hẹp tối đa bề mặt phơi nhiễm rủi ro."
     },
     {
       "type": "bullet",
-      "text": "Thực hành lập trình an toàn (Secure Coding) tại tầng ứng dụng là lá chắn vững chắc bảo vệ dữ liệu nghiệp vụ của tổ chức."
+      "text": "3. Kết hợp giữa Phòng thủ thụ động và Phản ứng chủ động: Các giải pháp chặn lọc cố định (như tường lửa tĩnh hay tham số kernel) cần phải được bổ trợ bởi các cơ chế phản ứng thích ứng thời gian thực (như Fail2ban tự động cô lập IP tấn công) và các cơ chế giám sát truy vết (như Kernel Auditd) để đảm bảo năng lực nhận biết tình huống và điều tra sau sự cố."
+    },
+    {
+      "type": "bullet",
+      "text": "4. Thực hành lập trình an toàn (Secure Coding): Tại tầng ứng dụng nghiệp vụ, mọi dữ liệu đầu vào từ người dùng đều phải được coi là không đáng tin cậy (Zero Trust). Việc sử dụng Parameterized Prepared Statements và Whitelist Validation là giải pháp duy nhất triệt tiêu hoàn toàn bản chất của các lỗ hổng tiêm mã độc (Injection flaws)."
     }
   ]
 }

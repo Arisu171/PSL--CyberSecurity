@@ -1,0 +1,5 @@
+method=HostDefense_Fail2ban_SSH_BruteForce_Mitigation
+target=10.2.99.10
+assessor=10.2.99.20
+log=/media/sf_.shared/scripts/lab99/volumes/reports/fail2ban_verify.log
+result=PASS

@@ -58,7 +58,6 @@ fi
 echo
 if [[ "$fail" -eq 0 ]]; then
   echo "KET QUA DONG LAB 04: PASS"
-  echo "Co the chuyen sang Lab 05: bash /media/sf_.shared/scripts/lab05/.lab/00_init.sh"
 else
   echo "KET QUA DONG LAB 04: FAIL"
 fi

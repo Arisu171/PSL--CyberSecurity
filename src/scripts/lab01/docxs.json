@@ -7,9 +7,9 @@
       "name": "Nguyễn Bảo Long",
       "id": "223001756",
       "class": "CNTT D2023B",
-      "course_code": "02 (x = 02)",
-      "group": "Nhóm 6 (y = 6)",
-      "network": "192.168.117.0/24 (Host-Only Network)"
+      "course_code": "02",
+      "group": "Nhóm 6",
+      "network": "192.168.117.0/24"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab01.docx"
   },
@@ -381,12 +381,42 @@
         "Tên phần mềm và phiên bản"
       ],
       "rows": [
-        ["1", "SSH", "22", "OpenSSH 9.9p1 Ubuntu 3ubuntu3.2 (Ubuntu Linux; protocol 2.0)"],
-        ["2", "SMTP", "25", "Postfix smtpd (3.9.1)"],
-        ["3", "POP3", "110", "Dovecot pop3d (2.3.21.1)"],
-        ["4", "IMAP", "143", "Dovecot imapd (Ubuntu)"],
-        ["5", "IMAPS (IMAP qua SSL)", "993", "Dovecot imapd (Ubuntu)"],
-        ["6", "POP3S (POP3 qua SSL)", "995", "Dovecot pop3d"]
+        [
+          "1",
+          "SSH",
+          "22",
+          "OpenSSH 9.9p1 Ubuntu 3ubuntu3.2 (Ubuntu Linux; protocol 2.0)"
+        ],
+        [
+          "2",
+          "SMTP",
+          "25",
+          "Postfix smtpd (3.9.1)"
+        ],
+        [
+          "3",
+          "POP3",
+          "110",
+          "Dovecot pop3d (2.3.21.1)"
+        ],
+        [
+          "4",
+          "IMAP",
+          "143",
+          "Dovecot imapd (Ubuntu)"
+        ],
+        [
+          "5",
+          "IMAPS (IMAP qua SSL)",
+          "993",
+          "Dovecot imapd (Ubuntu)"
+        ],
+        [
+          "6",
+          "POP3S (POP3 qua SSL)",
+          "995",
+          "Dovecot pop3d"
+        ]
       ]
     },
     {
@@ -438,4 +468,3 @@
     }
   ]
 }
-

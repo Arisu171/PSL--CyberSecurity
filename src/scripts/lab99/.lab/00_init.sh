@@ -68,6 +68,19 @@ ss_out="$(sudo docker exec "$CONTAINER_TARGET" ss -lnt | grep -E ':22|:2222' || 
 echo "$ss_out"
 grep -q ':22' <<<"$ss_out" && pass "SSH baseline port 22" || bad "SSH chua lang nghe"
 
+note "Kiem tra dich vu Web App Lab 99 (port 8080)"
+if ! sudo docker exec "$CONTAINER_TARGET" pgrep -f lab99_app.py >/dev/null 2>&1; then
+  sudo docker exec -d "$CONTAINER_TARGET" python3 /usr/local/bin/lab99_app.py 8080
+  sleep 1
+fi
+if sudo docker exec "$CONTAINER_TARGET" curl -s http://127.0.0.1:8080/health | grep -q "healthy"; then
+  pass "Web App baseline lang nghe port 8080"
+else
+  echo "WARN: Web App chua khoi dong, khoi dong lai..."
+  sudo docker exec -d "$CONTAINER_TARGET" python3 /usr/local/bin/lab99_app.py 8080
+  sleep 1
+fi
+
 echo
 echo "Target=${IP_TARGET}  Assessor=${IP_ASSESSOR}  user=labuser"
 if [[ "$fail" -eq 0 ]]; then

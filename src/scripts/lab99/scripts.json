@@ -1,45 +1,90 @@
 {
   "lab_name": "lab99",
-  "description": "Bai tap lon: tai su dung thu nghiem Lab02 (ARP/MITM) + Lab03 (Kaminsky/SPR) + Lab04 (DoS/RateLimit) + Lab05 (SQLi/PreparedStatements); tuy chon harden Ubuntu",
+  "description": "Du an nghien cuu an ninh mang toan dien: Phong thu theo chieu sau (Defense-in-Depth) tich hop Lab 01-05, Fail2ban va Auditd",
   "steps": [
     {
-      "key": "apply_lab02",
-      "name": "Ap dung chuoi Lab 02 (ARP -> MITM -> ARP tinh)",
-      "command": "bash /media/sf_.shared/scripts/lab99/.lab/08_apply_lab02.sh"
-    },
-    {
-      "key": "apply_lab03",
-      "name": "Ap dung chuoi Lab 03 (Kaminsky -> SPR)",
-      "command": "bash /media/sf_.shared/scripts/lab99/.lab/09_apply_lab03.sh"
-    },
-    {
-      "key": "apply_lab04",
-      "name": "Ap dung chuoi Lab 04 (DoS ICMP/SYN/DNS -> SYN Cookies & Rate Limit)",
-      "command": "bash /media/sf_.shared/scripts/lab99/.lab/11_apply_lab04.sh"
-    },
-    {
-      "key": "apply_lab05",
-      "name": "Ap dung chuoi Lab 05 (SQLi SELECT/INSERT -> Prepared Statements)",
-      "command": "bash /media/sf_.shared/scripts/lab99/.lab/12_apply_lab05.sh"
-    },
-    {
-      "key": "summary",
-      "name": "Tong hop project_summary.md",
-      "command": "bash /media/sf_.shared/scripts/lab99/.lab/10_summary_project.sh"
-    },
-    {
-      "key": "harden_optional_init",
-      "name": "[Tuy chon] Khoi tao Lab99 harden",
+      "key": "init",
+      "name": "Khoi tao he sinh thai Lab99 (Target 10.2.99.10 + Assessor 10.2.99.20)",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/00_init.sh"
     },
     {
-      "key": "harden_optional_compare",
-      "name": "[Tuy chon] Chuoi harden + compare (01..07, 06)",
+      "key": "baseline_audit",
+      "name": "Kiem toan chi so Lynis va he thong ban dau (Before Hardening)",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/01_baseline_audit.sh"
     },
     {
+      "key": "assess_surface_before",
+      "name": "Tham do be mat tan cong mang ban dau (Nmap scan Lab 01)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/02_assess_surface.sh before"
+    },
+    {
+      "key": "harden",
+      "name": "Trien khai gia co da tang (SSH 2222, UFW, Sysctl, Static ARP, AppSec)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/03_harden.sh"
+    },
+    {
+      "key": "verify_harden",
+      "name": "Xac minh hieu luc cac cau hinh gia co tren Target",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/04_verify_harden.sh"
+    },
+    {
+      "key": "reassess",
+      "name": "Tai kiem toan chi so he thong sau gia co (After Hardening)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/05_reassess.sh"
+    },
+    {
+      "key": "assess_surface_after",
+      "name": "Tham do lai be mat mang sau gia co",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/02_assess_surface.sh after"
+    },
+    {
+      "key": "compare_report",
+      "name": "So sanh dinh luong Before vs After (compare_report.md)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/06_compare_report.sh"
+    },
+    {
+      "key": "validate_defense",
+      "name": "Kiem chung be mat cong khai tu Assessor",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/07_validate_defense.sh after"
+    },
+    {
+      "key": "attack_layer2_arp",
+      "name": "Assessor tan cong ARP Spoofing -> Kiem chung phong thu Layer 2 (Lab 02)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/08_apply_lab02.sh"
+    },
+    {
+      "key": "attack_dns_spr",
+      "name": "Assessor tham dinh DNS -> Kiem chung Source Port Randomization (Lab 03)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/09_apply_lab03.sh"
+    },
+    {
+      "key": "attack_dos_syn",
+      "name": "Assessor tan cong DoS SYN Flood -> Kiem chung SYN Cookies & Rate Limit (Lab 04)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/11_apply_lab04.sh"
+    },
+    {
+      "key": "attack_appsec_sqli_rce",
+      "name": "Assessor tan cong SQLi & RCE -> Kiem chung Prepared Statements & Input Sanitization (Lab 05)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/12_apply_lab05.sh"
+    },
+    {
+      "key": "attack_ssh_fail2ban",
+      "name": "Assessor tan cong SSH Brute-Force -> Kiem chung phong thu chu dong Fail2ban",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/13_apply_fail2ban.sh"
+    },
+    {
+      "key": "host_audit_integrity",
+      "name": "Gia lap can thiep file he thong -> Kiem chung giam sat truy vet Auditd (HIDS)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/14_apply_auditd.sh"
+    },
+    {
+      "key": "summary_project",
+      "name": "Tong hop toan dien ma tran phong thu (project_summary.md)",
+      "command": "bash /media/sf_.shared/scripts/lab99/.lab/10_summary_project.sh"
+    },
+    {
       "key": "down",
-      "name": "Dong Lab99 harden containers",
+      "name": "Dong va giai phong moi truong Lab99",
       "command": "bash /media/sf_.shared/scripts/lab99/.lab/99_down.sh"
     }
   ]

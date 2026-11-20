@@ -1,0 +1,38 @@
+==========================================================
+ LAB99 -> KIEM CHUNG PHONG THU CHU DONG FAIL2BAN
+ Thoi gian thuc hien: 2026-11-19T20:28:12Z
+ Target: 10.2.99.10 | Assessor: 10.2.99.20
+==========================================================
+
+[*] Buoc 1: Kiem tra trang thai Fail2ban tren Target
+  - Trang thai jail sshd truoc thu nghiem:
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	0
+|  `- File list:	/var/log/auth.log
+`- Actions
+   |- Currently banned:	0
+   |- Total banned:	0
+   `- Banned IP list:	
+
+[*] Port SSH muc tieu kiem tra: 2222
+
+[*] Buoc 2: Assessor phat dong tan cong do mat khau (Brute-Force simulation)
+  - Gui 5 yeu cau dang nhap voi mat khau sai tu Assessor...
+[*] Buoc 3: Kiem tra phan ung tu dong cua Fail2ban tren Target
+  - Trang thai jail sshd sau khi bi brute-force:
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	1
+|  |- Total failed:	5
+|  `- File list:	/var/log/auth.log
+`- Actions
+   |- Currently banned:	1
+   |- Total banned:	1
+   `- Banned IP list:	10.2.99.20
+
+   `- Banned IP list:	10.2.99.20
+  [+] PHONG THU CHU DONG THANH CONG: Fail2ban da phat hien va BAN thanh cong IP 10.2.99.20!
+
+FAIL2BAN_VERIFY=PASS

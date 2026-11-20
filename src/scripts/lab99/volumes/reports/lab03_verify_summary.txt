@@ -1,4 +1,5 @@
-method=Lab03_Kaminsky_SPR
-scripts=00_init,01_gen_query,02_gen_response,03_test_attack,04_test_defense
+method=Lab03_DNS_Resilience_SPR_EphemeralPorts
+target=10.2.99.10
+assessor=10.2.99.20
 log=/media/sf_.shared/scripts/lab99/volumes/reports/lab03_verify.log
 result=PASS

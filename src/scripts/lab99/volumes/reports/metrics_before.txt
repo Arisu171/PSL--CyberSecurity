@@ -1,5 +1,5 @@
 label=before
-timestamp_utc=20261119T161424Z
+timestamp_utc=20261119T201713Z
 ssh_port=22
 permit_rootlogin=yes
 password_authentication=yes
@@ -11,6 +11,6 @@ unattended_upgrades=yes
 rp_filter=0
 tcp_syncookies=1
 aslr=2
-open_tcp_ports=22,44675
+open_tcp_ports=22,8080,35601
 lynis_hardening_index=NA
 lab99_score=5/12

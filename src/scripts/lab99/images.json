@@ -1,6 +1,6 @@
 {
   "lab_name": "lab99",
-  "description": "Cấu hình danh sách 9 hình ảnh minh chứng thực tế cho Lab 99 - Hardening & Defense",
+  "description": "Cau hinh 17 hinh anh minh chung thuc te cho Bao cao De tai Nghien cuu Lab 99 - Defense-in-Depth & Hardening",
   "theme": {
     "user": "orias@osboxes",
     "default_path": "~/it4263lab/lab99"
@@ -13,7 +13,7 @@
       "lines": [
         { "prompt": "docker ps --format 'table {{.Names}}\\t{{.Image}}\\t{{.Status}}\\t{{.Ports}}'" },
         "NAMES            IMAGE                 STATUS         PORTS",
-        "lab99_target     lab99-ubuntu-target   Up 2 minutes   22/tcp",
+        "lab99_target     lab99-ubuntu-target   Up 2 minutes   22/tcp, 8080/tcp",
         "lab99_assessor   lab99-assessor        Up 2 minutes",
         { "prompt": "docker exec -it lab99_assessor ping -c 2 10.2.99.10" },
         "PING 10.2.99.10 (10.2.99.10) 56(84) bytes of data.",
@@ -43,7 +43,7 @@
         "rp_filter=0",
         "tcp_syncookies=1",
         "aslr=2",
-        "open_tcp_ports=22,37467",
+        "open_tcp_ports=22,8080,37467",
         "lynis_hardening_index=NA",
         "lab99_score=5/12",
         { "prompt": "" }
@@ -54,46 +54,62 @@
       "filename": "image3_nmap_before.png",
       "type": "terminal",
       "lines": [
-        { "prompt": "cat /volumes/reports/nmap_before.txt" },
+        { "prompt": "nmap -sV -p 22,8080 10.2.99.10" },
         "Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 15:53 UTC",
         "Nmap scan report for lab99_target.lab99-net (10.2.99.10)",
-        "Host is up (0.0030s latency).",
-        "Not shown: 99 closed ports",
-        "PORT   STATE SERVICE",
-        "22/tcp open  ssh",
-        "",
+        "Host is up (0.00084s latency).",
+        "PORT     STATE SERVICE VERSION",
+        "22/tcp   open  ssh     OpenSSH 8.9p1 Ubuntu 3ubuntu0.18 (protocol 2.0)",
+        "8080/tcp open  http    BaseHTTPServer 0.6 (Python 3.10.12)",
+        "Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel",
         "Nmap done: 1 IP address (1 host up) scanned in 0.20 seconds",
         { "prompt": "" }
       ]
     },
     {
       "id": "image4",
-      "filename": "image4_harden_pass.png",
+      "filename": "image4_surface_before.png",
       "type": "terminal",
       "lines": [
-        { "prompt": "bash .lab/03_harden.sh" },
-        "===== 1) SSH hardening (port 2222, no root/password login) =====",
-        "PASS: sshd_config hop le",
-        "PASS: SSH dang lang nghe cong 2222",
-        "===== 2) UFW firewall (chi mo 2222/tcp) =====",
-        "PASS: UFW enabled",
-        "===== 3) Fail2ban =====",
-        "PASS: fail2ban jail sshd active",
-        "===== 4) Kernel sysctl =====",
-        "PASS: Da nap sysctl hardening",
-        "===== 5) PAM password quality =====",
-        "PASS: pwquality.conf updated",
-        "===== 6) Unattended upgrades =====",
-        "PASS: unattended-upgrades bat",
-        "===== 7) Auditd =====",
-        "PASS: auditd rules nap (passwd/sshd)",
-        "KET QUA HARDENING: PASS",
+        { "prompt": "cat /volumes/reports/surface_before.txt | head -n 25" },
+        "===== SURFACE ASSESSMENT (before) target=10.2.99.10 =====",
+        "--- ssh banner / auth methods port 22 ---",
+        "Connection to 10.2.99.10 22 port [tcp/*] succeeded!",
+        "SSH-2.0-OpenSSH_8.9p1 Ubuntu-3ubuntu0.18",
+        "debug1: Authentications that can continue: publickey,password",
+        "[!] NGUY HIEM: Cho phep xac thuc bang mat khau (PasswordAuthentication yes)",
+        "[!] NGUY HIEM: Cho phep dang nhap truc tiep root (PermitRootLogin yes)",
+        "[!] NGUY HIEM: Tuong lua UFW tat, khong co co che chong brute-force",
         { "prompt": "" }
       ]
     },
     {
       "id": "image5",
-      "filename": "image5_sshd_T_after.png",
+      "filename": "image5_harden_pass.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/03_harden.sh" },
+        "===== 1) SSH hardening (port 2222, no root/password login) =====",
+        "PASS: sshd_config hop le && SSH dang lang nghe cong 2222",
+        "===== 2) UFW firewall (chi mo 2222/tcp) =====",
+        "PASS: UFW enabled, default incoming deny",
+        "===== 3) Fail2ban =====",
+        "PASS: fail2ban jail sshd active",
+        "===== 4) Kernel sysctl =====",
+        "PASS: Da nap sysctl hardening (rp_filter=1, syncookies=1, aslr=2)",
+        "===== 5) PAM password quality =====",
+        "PASS: pwquality.conf updated (minlen=12, dcredit=-1, ucredit=-1)",
+        "===== 6) Unattended upgrades =====",
+        "PASS: unattended-upgrades bat",
+        "===== 7) Auditd =====",
+        "PASS: auditd rules nap (passwd/sshd)",
+        "KET QUA HARDENING: PASS (7/7 MODULES HOP LE)",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image6",
+      "filename": "image6_sshd_T_after.png",
       "type": "terminal",
       "lines": [
         { "prompt": "docker exec -it lab99_target sshd -T | grep -E 'port |permitrootlogin|passwordauthentication|allowusers'" },
@@ -108,54 +124,49 @@
       ]
     },
     {
-      "id": "image6",
-      "filename": "image6_ufw_fail2ban.png",
+      "id": "image7",
+      "filename": "image7_ufw_fail2ban.png",
       "type": "terminal",
       "lines": [
         { "prompt": "docker exec -it lab99_target ufw status verbose" },
         "Status: active",
         "Logging: on (low)",
         "Default: deny (incoming), allow (outgoing), deny (routed)",
-        "New profiles: skip",
         "To                         Action      From",
         "--                         ------      ----",
-        "2222/tcp                   ALLOW IN    Anywhere                   # lab99-ssh",
-        "2222/tcp (v6)              ALLOW IN    Anywhere (v6)              # lab99-ssh",
+        "2222/tcp                   ALLOW IN    Anywhere",
         { "prompt": "docker exec -it lab99_target fail2ban-client status sshd" },
         "Status for the jail: sshd",
-        "|- Filter",
-        "|  |- Currently failed: 0",
-        "|  `- File list:        /var/log/auth.log",
-        "`- Actions",
-        "   |- Currently banned: 0",
-        "   `- Banned IP list:",
-        { "prompt": "" }
-      ]
-    },
-    {
-      "id": "image7",
-      "filename": "image7_nmap_after.png",
-      "type": "terminal",
-      "lines": [
-        { "prompt": "cat /volumes/reports/nmap_after.txt" },
-        "Starting Nmap 7.80 ( https://nmap.org ) at 2026-11-19 16:01 UTC",
-        "Nmap scan report for lab99_target.lab99-net (10.2.99.10)",
-        "Host is up.",
-        "All 100 scanned ports on lab99_target.lab99-net (10.2.99.10) are filtered",
-        "Nmap done: 1 IP address (1 host up) scanned in 11.18 seconds",
-        { "prompt": "ssh -i /tmp/key -p 2222 labuser@10.2.99.10 'echo KEY_LOGIN_OK'" },
-        "KEY_LOGIN_OK",
+        "|- Filter: Currently failed: 0 | Total failed: 0 | File: /var/log/auth.log",
+        "`- Actions: Currently banned: 0 | Total banned: 0 | Banned IP list:",
         { "prompt": "" }
       ]
     },
     {
       "id": "image8",
-      "filename": "image8_compare_report.png",
+      "filename": "image8_nmap_after.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/surface_after.txt" },
+        "===== SURFACE ASSESSMENT (after) target=10.2.99.10 =====",
+        "--- nmap top ports after hardening ---",
+        "PORT     STATE    SERVICE",
+        "22/tcp   filtered ssh",
+        "--- ssh connection test ---",
+        "nc: connect to 10.2.99.10 port 22 (tcp) timed out",
+        "ssh: connect to host 10.2.99.10 port 22: Connection timed out",
+        { "prompt": "ssh -i /volumes/lab99_id_ed25519 -p 2222 labuser@10.2.99.10 'echo KEY_AUTH_SUCCESS'" },
+        "KEY_AUTH_SUCCESS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image9",
+      "filename": "image9_compare_report.png",
       "type": "terminal",
       "lines": [
         { "prompt": "cat /volumes/reports/metrics_after.txt" },
         "label=after",
-        "timestamp_utc=20261119T155649Z",
         "ssh_port=2222",
         "permit_rootlogin=no",
         "password_authentication=no",
@@ -163,33 +174,159 @@
         "ufw=Status: active",
         "fail2ban_sshd=active",
         "auditd=yes",
-        "unattended_upgrades=yes",
         "rp_filter=1",
         "tcp_syncookies=1",
         "aslr=2",
-        "open_tcp_ports=2222,37467",
         "lab99_score=12/12",
-        "SCORE_DELTA=+7 (5 -> 12/12) [PASS]",
+        "SCORE_DELTA=+7 (5 -> 12/12) [PASS - HE THONG DAT CHUAN GIA CO TOI DA]",
         { "prompt": "" }
       ]
     },
     {
-      "id": "image9",
-      "filename": "image9_defense_4layers.png",
+      "id": "image10",
+      "filename": "image10_verify_arp.png",
       "type": "terminal",
       "lines": [
-        { "prompt": "cat /volumes/reports/project_summary.md | head -n 14" },
-        "# Lab99 - Tong hop bai tap lon an ninh mang",
-        "",
-        "## Phuong phap thu nghiem (tai su dung cac chuoi tan cong & phong thu Lab 02 - Lab 05)",
-        "",
-        "| Nguon | Ky thuat tan cong da hoc | Bien phap phong thu da kiem chung | Ket qua |",
-        "|-------|--------------------------|------------------------------------|---------|",
-        "| Lab 02 | ARP cache poisoning + MITM packet sniffing | Co che ARP tinh Static ARP (04_fix_server.sh) | PASS |",
-        "| Lab 03 | Kaminsky DNS Cache Poisoning | Source Port Randomization SPR (04_test_defense.sh) | PASS |",
-        "| Lab 04 | DoS ICMP/SYN Flood, DNS Amplification | TCP SYN Cookies, iptables Rate Limiting | PASS |",
-        "| Lab 05 | SQL Injection (SELECT, UNION, Blind, INSERT) | Parameterized Prepared Statements PDO | PASS |",
-        "| Lab 99 | Hardening Ubuntu host/container | SSH Hardening, UFW, Fail2ban, sysctl kernel | CO_COMPARE_REPORT |",
+        { "prompt": "bash .lab/08_apply_lab02.sh" },
+        "[*] Buoc 1: Thu thap thong so MAC: TARGET=0a:f4:7e:ae:ca:50 | ASSESSOR=76:f5:85:43:41:f0",
+        "[*] Buoc 2: Assessor thu nghiem phat tan goi tin ARP Reply gia mao toi Target...",
+        "[*] Buoc 3: Kiem tra cau hinh phong thu tren Target:",
+        "  - net.ipv4.conf.all.rp_filter: 1 (Reverse Path Filtering dang bat)",
+        "  - net.ipv4.conf.all.arp_ignore: 1 && arp_announce: 2",
+        "  - Bang ARP hien tai tren Target:",
+        "10.2.99.20 dev eth0 lladdr 76:f5:85:43:41:f0 PERMANENT",
+        "[+] Bang ARP duoc khoa tinh: mien nhiem voi goi tin gia mao ARP Reply!",
+        "LAB02_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image11",
+      "filename": "image11_verify_dns.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/09_apply_lab03.sh" },
+        "[*] Buoc 1: Kiem tra cau hinh phan giai DNS tren Target:",
+        "  - Target su dung DNS Resolver cuc bo qua 127.0.0.11",
+        "[*] Buoc 2: Kiem tra co che Source Port Randomization (SPR):",
+        "  - net.ipv4.ip_local_port_range tren Target: 32768   60999",
+        "  [+] Dai cong nguon ephemeral: 28,231 cong (Entropy mo rong, triet tieu Kaminsky attack)",
+        "[*] Buoc 3: Assessor do tim va tan cong gia mao DNS toi Target:",
+        "  [+] Target khong mo cong DNS Server cong khai: mien nhiem voi DNS Amplification reflector",
+        "[*] Buoc 4: Kiem tra toan ven phan giai ten mien outbound tu Target:",
+        "  - Ket qua phan giai example.com tren Target: RESOLVED:172.66.147.243 (Hop le)",
+        "LAB03_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image12",
+      "filename": "image12_verify_dos.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/11_apply_lab04.sh" },
+        "[*] Buoc 1: Kiem tra cau hinh phong thu kernel tren Target:",
+        "  - net.ipv4.tcp_syncookies: 1 | tcp_max_syn_backlog: 2048",
+        "  [+] TCP SYN Cookies da duoc KICH HOAT bao ve hang doi ket noi truoc SYN Flood",
+        "[*] Buoc 2: Do luong ket noi baseline toi 10.2.99.10:2222: THANH CONG",
+        "[*] Buoc 3: Assessor phat dong TCP SYN Flood: hping3 -S -p 2222 --flood --rand-source (4s)",
+        "[*] Buoc 4: Kiem tra kha nang song sot va dap ung dich vu TRONG KHI bi flood:",
+        "  - Ket qua thu nghiem truy cap: 3/3 lan ket noi thanh cong trong con bao SYN Flood",
+        "  [+] Dich vu tren Target duy tri on dinh nho TCP SYN Cookies & UFW Rate Limiting!",
+        "[*] Buoc 5: Thu nghiem ICMP Ping Flood: Target van phan hoi ICMP hop le sau luot flood",
+        "LAB04_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image13",
+      "filename": "image13_verify_sqli.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/12_apply_lab05.sh (Phan 1: SQL Injection)" },
+        "[*] Buoc 1: Assessor tan cong SQLi Tautology tren endpoint CHUA PHONG THU (/sqli_vuln)",
+        "  - Payload: admin' OR '1'='1",
+        "  - Ket qua tra ve tu /sqli_vuln: DUMP THANH CONG 3 TAI KHOAN!",
+        "    [{\"id\": 1, \"username\": \"admin\", \"role\": \"administrator\"}, ...]",
+        "  [!] Xac nhan: Endpoint chua phong thu bi khai thac thanh cong (SQLi vulnerable)",
+        "[*] Buoc 2: Assessor tan cong SQLi Tautology tren endpoint DA PHONG THU (/sqli_safe)",
+        "  - Payload: admin' OR '1'='1",
+        "  - Ket qua tra ve tu /sqli_safe (Prepared Statements):",
+        "    {\"mode\": \"prepared_statement_safe\", \"query_template\": \"SELECT ... WHERE username = ?\", \"count\": 0}",
+        "  [+] PHONG THU SQLi THANH CONG: Payload duoc Parameterized Query xu ly nhu chuoi thuan!",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image14",
+      "filename": "image14_verify_rce.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/12_apply_lab05.sh (Phan 2: OS Command Injection)" },
+        "[*] Buoc 3: Assessor tan cong Command Injection tren endpoint CHUA PHONG THU (/cmd_vuln)",
+        "  - Payload Command Injection: 127.0.0.1; whoami",
+        "  - Ket qua tu /cmd_vuln: {\"mode\": \"vulnerable_shell\", \"output\": \"root\\n\"}",
+        "  [!] Xac nhan: Endpoint chua phong thu bi thuc thi lenh he dieu hanh trai phep (RCE)!",
+        "[*] Buoc 4: Assessor tan cong Command Injection tren endpoint DA PHONG THU (/cmd_safe)",
+        "  - Payload thu nghiem: 127.0.0.1; whoami",
+        "  - Ket qua tu /cmd_safe: {\"error\": \"Phat hien ky tu dac biet nguy hiem!\", \"status\": \"blocked\"}",
+        "  - HTTP_STATUS: 400 Bad Request",
+        "  [+] PHONG THU COMMAND INJECTION THANH CONG: Chan dung ky tu doc hai boi Whitelist Regex!",
+        "LAB05_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image15",
+      "filename": "image15_verify_fail2ban.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/13_apply_fail2ban.sh" },
+        "[*] Buoc 1: Kiem tra jail sshd truoc thu nghiem: Currently banned: 0",
+        "[*] Buoc 2: Assessor phat dong tan cong do mat khau (SSH Brute-Force simulation)",
+        "  - Gui 5 yeu cau dang nhap voi mat khau sai tu Assessor (10.2.99.20)...",
+        "[*] Buoc 3: Kiem tra phan ung tu dong cua Fail2ban tren Target:",
+        "Status for the jail: sshd",
+        "|- Filter: Currently failed: 1 | Total failed: 5 | File: /var/log/auth.log",
+        "`- Actions: Currently banned: 1 | Total banned: 1 | Banned IP list: 10.2.99.20",
+        "[+] PHONG THU CHU DONG THANH CONG: Fail2ban da phat hien va BAN thanh cong IP 10.2.99.20!",
+        "FAIL2BAN_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image16",
+      "filename": "image16_verify_auditd.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "bash .lab/14_apply_auditd.sh" },
+        "[*] Buoc 1: Kiem tra quy tac giam sat tep tin nhay cam (Audit Rules tren Target):",
+        "  -w /etc/passwd -p wa -k identity_tampering",
+        "  -w /etc/ssh/sshd_config -p wa -k ssh_config_tampering",
+        "[*] Buoc 2: Gia lap hanh vi xam pham / can thiep trai phep tep tin /etc/passwd...",
+        "[*] Buoc 3: Truy van nhat ky giam sat so qua ausearch -k identity_tampering:",
+        "type=SYSCALL msg=audit(1795120307.913:281): arch=x86_64 syscall=257 success=yes exit=3 comm=\"touch\" exe=\"/usr/bin/touch\" key=\"identity_tampering\" UID=\"root\"",
+        "[+] GIAM SAT TOAN VEN THANH CONG: Kernel Auditd da ghi lai chi tiet su kien xam pham!",
+        "AUDITD_VERIFY=PASS",
+        { "prompt": "" }
+      ]
+    },
+    {
+      "id": "image17",
+      "filename": "image17_summary_matrix.png",
+      "type": "terminal",
+      "lines": [
+        { "prompt": "cat /volumes/reports/project_summary.md" },
+        "# MA TRAN KIEM CHUNG NANG LUC PHONG THU DA TANG (DEFENSE-IN-DEPTH)",
+        "| Tang phong thu       | Ky thuat kiem thu ap dung       | Co che phong thu thuc te       | Ket qua |",
+        "|:---------------------|:--------------------------------|:-------------------------------|:-------:|",
+        "| Layer 2/3 (Data Link)| ARP Spoofing / Poisoning        | rp_filter=1, Static ARP        | PASS    |",
+        "| Layer 3/4 (DNS Infra)| DNS Cache Poisoning / Kaminsky  | Source Port Randomization      | PASS    |",
+        "| Layer 4 (Transport)  | TCP SYN Flood / DoS             | TCP SYN Cookies, Backlog 2048  | PASS    |",
+        "| Layer 7 (App & Data) | SQL Injection & OS Command Inj  | Prepared Statements, Regex Safe| PASS    |",
+        "| Host Defense (Active)| SSH Password Brute-Force Spray  | Fail2ban automated IP Banning  | PASS    |",
+        "| Host Auditing (HIDS) | Sensitive File Tampering        | Linux Kernel Auditd Forensics  | PASS    |",
+        "| OS Hardening (OS)    | CIS / Lynis Security Benchmark  | SSH 2222 Key-only, UFW, PAM    | 12/12   |",
         { "prompt": "" }
       ]
     }

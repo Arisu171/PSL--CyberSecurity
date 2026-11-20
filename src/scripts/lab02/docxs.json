@@ -7,9 +7,9 @@
       "name": "Nguyễn Bảo Long",
       "id": "223001756",
       "class": "CNTT D2023B",
-      "course_code": "02 (x = 02)",
-      "group": "Nhóm 6 (y = 6)",
-      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+      "course_code": "02",
+      "group": "Nhóm 6",
+      "network": "10.2.6.0/24"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab02.docx"
   },
@@ -68,11 +68,27 @@
     },
     {
       "type": "table",
-      "headers": ["Máy Container", "Địa chỉ IP", "Địa chỉ MAC"],
+      "headers": [
+        "Máy Container",
+        "Địa chỉ IP",
+        "Địa chỉ MAC"
+      ],
       "rows": [
-        ["User (Nạn nhân)", "10.2.6.10", "12:35:45:0c:6f:fb"],
-        ["Server (Máy chủ)", "10.2.6.20", "9e:21:00:d4:d0:ed"],
-        ["Attacker (Tấn công)", "10.2.6.51", "c6:76:28:e4:17:86"]
+        [
+          "User (Nạn nhân)",
+          "10.2.6.10",
+          "12:35:45:0c:6f:fb"
+        ],
+        [
+          "Server (Máy chủ)",
+          "10.2.6.20",
+          "9e:21:00:d4:d0:ed"
+        ],
+        [
+          "Attacker (Tấn công)",
+          "10.2.6.51",
+          "c6:76:28:e4:17:86"
+        ]
       ]
     },
     {
@@ -266,4 +282,3 @@
     }
   ]
 }
-

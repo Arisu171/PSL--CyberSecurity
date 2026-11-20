@@ -1,0 +1,4 @@
+method=HostDefense_Auditd_File_Integrity_Monitoring
+target=10.2.99.10
+log=/media/sf_.shared/scripts/lab99/volumes/reports/auditd_verify.log
+result=PASS

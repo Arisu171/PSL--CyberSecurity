@@ -1,4 +1,5 @@
-method=Lab05_SQLi_PreparedStatements
-scripts=00_init,01_example1_select,02_example2_insert,03_test_defense,99_down
+method=Lab05_AppSec_SQLi_PreparedStatements_And_CommandInjection_Sanitization
+target=10.2.99.10:8080
+assessor=10.2.99.20
 log=/media/sf_.shared/scripts/lab99/volumes/reports/lab05_verify.log
 result=PASS

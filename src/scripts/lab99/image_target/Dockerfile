@@ -21,6 +21,7 @@ RUN apt-get update \
         procps \
         ca-certificates \
         curl \
+        sqlite3 \
         python3 \
         python3-yaml \
     && rm -rf /var/lib/apt/lists/*
@@ -39,8 +40,11 @@ RUN sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config \
     && sed -i 's/^#\?ChallengeResponseAuthentication.*/ChallengeResponseAuthentication no/' /etc/ssh/sshd_config \
     && echo 'root:RootLab99!' | chpasswd
 
+COPY lab99_app.py /usr/local/bin/lab99_app.py
+RUN chmod +x /usr/local/bin/lab99_app.py
+
 COPY start.sh /usr/local/bin/start-lab99-target.sh
 RUN chmod +x /usr/local/bin/start-lab99-target.sh
 
-EXPOSE 22
+EXPOSE 22 8080
 CMD ["/usr/local/bin/start-lab99-target.sh"]

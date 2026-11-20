@@ -5,6 +5,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         nmap \
+        hping3 \
+        dnsutils \
+        arping \
+        tcpdump \
         openssh-client \
         netcat-openbsd \
         iproute2 \

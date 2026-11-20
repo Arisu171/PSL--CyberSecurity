@@ -7,9 +7,9 @@
       "name": "Nguyễn Bảo Long",
       "id": "223001756",
       "class": "CNTT D2023B",
-      "course_code": "02 (x = 02)",
-      "group": "Nhóm 6 (y = 6)",
-      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+      "course_code": "02",
+      "group": "Nhóm 6",
+      "network": "10.2.6.0/24"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab05.docx"
   },
@@ -32,7 +32,7 @@
     },
     {
       "type": "paragraph",
-      "text": "Môi trường thực hành được triển khai dưới dạng cụm container Docker kết nối trên subnet cầu ảo net-10.2.6.0 (Subnet: 10.2.6.0/24):"
+      "text": "Môi trường thực hành được triển khai dưới dạng cụm container Docker kết nối trên subnet cầu ảo net-10.2.6.0 :"
     },
     {
       "type": "bullet",

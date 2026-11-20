@@ -43,18 +43,16 @@ bash /media/sf_.shared/scripts/lab03/.lab/04_test_defense.sh
 bash /media/sf_.shared/scripts/lab03/.lab/99_down.sh
 ```
 
-Chuyển nhanh Lab 02 → Lab 03:
-
 ```bash
-bash /media/sf_.shared/scripts/lab02/.lab/99_down.sh
-bash /media/sf_.shared/scripts/lab03/.lab/00_init.sh
+# Khởi tạo và kiểm tra môi trường DNS, nạp query-source 44444
+bash .lab/00_init.sh
 ```
 
 ---
 
 ## GIAI ĐOẠN 0: DỰNG MÔI TRƯỜNG
 
-Lab 03 dùng subnet `10.2.6.0/24` (trùng Lab 02). **Không chạy Lab 02 và Lab 03 cùng lúc** — dùng `99_down.sh` khi kết thúc demo, hoặc `00_init.sh` sẽ `docker compose down` lab kia trước. Xóa default route Host qua `192.168.117.2` nếu có, để container DNS ra Internet qua NIC còn lại.
+Lab 03 dùng subnet `10.2.6.0/24`. Script `00_init.sh` sẽ tự động dọn dẹp các container của lab khác nếu đang chiếm giữ subnet này trước khi khởi động. Xóa default route Host qua `192.168.117.2` nếu có, để container DNS ra Internet qua NIC còn lại.
 
 ```bash
 sudo ip route del default via 192.168.117.2 2>/dev/null || true

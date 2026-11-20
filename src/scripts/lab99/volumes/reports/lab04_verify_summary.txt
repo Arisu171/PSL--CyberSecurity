@@ -1,4 +1,6 @@
 method=Lab04_DoS_SYNCookies_RateLimit
-scripts=00_init,01_scenario1,02_scenario2,03_scenario3,04_test_defense,99_down
+target=10.2.99.10
+assessor=10.2.99.20
+target_port=22
 log=/media/sf_.shared/scripts/lab99/volumes/reports/lab04_verify.log
 result=PASS

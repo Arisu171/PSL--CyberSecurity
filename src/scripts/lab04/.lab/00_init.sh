@@ -19,10 +19,19 @@ IP_ATTACKER="10.2.6.51"
 IP_USER="10.2.6.10"
 IP_DNS="10.2.6.53"
 HOST_BAD_DEFAULT="192.168.117.2"
+PORT_TELNET="23"
 
 WAIT_BOOT="4"
 NAME_FORMAT='{{.Names}}'
 PS_FORMAT='table {{.Names}}\t{{.Status}}\t{{.Image}}'
+
+# Container cua cac lab khac co the dang chiem subnet 10.2.6.0/24
+CLEANUP_LAB02=("lab02_user" "lab02_server" "lab02_attacker")
+CLEANUP_LAB03=("user-10.2.6.5" "attacker-10.2.6.1" "local-dns-server-10.2.6.53" "attacker-ns-10.2.6.153")
+CLEANUP_LAB05=("lab05_webserver" "lab05_attacker" "lab05_user")
+CLEANUP_LAB99=("lab99_target" "lab99_assessor")
+SUBNET_NETS=("net-10.2.6.0" "seed-net")
+
 fail=0
 
 note() { printf '\n===== %s =====\n' "$1"; }
@@ -38,16 +47,16 @@ note "Go default route Host gay can tro internet (neu co)"
 sudo ip route del default via "$HOST_BAD_DEFAULT" 2>/dev/null || true
 
 note "Don dep cac bai lab cu neu dang chiem subnet 10.2.6.0/24"
-for old_compose in "/media/sf_.shared/scripts/lab02/docker-compose.yml" \
-                   "/media/sf_.shared/scripts/lab03/docker-compose.yml" \
-                   "/media/sf_.shared/scripts/lab05/docker-compose.yml" \
-                   "/media/sf_.shared/scripts/lab99/docker-compose.yml"; do
-  if [[ -f "$old_compose" ]]; then
-    sudo docker compose -f "$old_compose" down 2>/dev/null || true
-  fi
+# Xoa truc tiep theo ten container — khong phu thuoc file compose cua lab khac
+sudo docker rm -f \
+  "${CLEANUP_LAB02[@]}" \
+  "${CLEANUP_LAB03[@]}" \
+  "${CLEANUP_LAB05[@]}" \
+  "${CLEANUP_LAB99[@]}" \
+  2>/dev/null || true
+for _net in "${SUBNET_NETS[@]}"; do
+  sudo docker network rm "$_net" 2>/dev/null || true
 done
-sudo docker network rm net-10.2.6.0 2>/dev/null || true
-sudo docker network rm seed-net 2>/dev/null || true
 
 note "Khoi dong 4 containers Lab 04"
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" up -d --force-recreate
@@ -64,7 +73,7 @@ for c in "${CONTAINERS[@]}"; do
   fi
 done
 
-note "Khoi chay dich vu Telnet (port 23) tren Victim"
+note "Khoi chay dich vu Telnet (port $PORT_TELNET) tren Victim"
 sudo docker exec "$CONTAINER_VICTIM" pkill -9 -f telnetd.py 2>/dev/null || true
 sudo docker exec -d "$CONTAINER_VICTIM" python3 /attack/telnetd.py
 sleep 1
@@ -89,10 +98,10 @@ else
 fi
 
 note "Kiem tra ket noi Telnet ban dau tu User den Victim"
-if sudo docker exec "$CONTAINER_USER" nc -z -w 2 "$IP_VICTIM" 23; then
-  pass "Dich vu Telnet tren Victim (port 23) hoat dong binh thuong"
+if sudo docker exec "$CONTAINER_USER" nc -z -w 2 "$IP_VICTIM" "$PORT_TELNET"; then
+  pass "Dich vu Telnet tren Victim (port $PORT_TELNET) hoat dong binh thuong"
 else
-  bad "Khong the ket noi toi port 23 cua Victim"
+  bad "Khong the ket noi toi port $PORT_TELNET cua Victim"
 fi
 
 echo

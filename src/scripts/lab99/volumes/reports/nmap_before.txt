@@ -1,8 +1,9 @@
-# Nmap 7.80 scan initiated Thu Nov 19 15:53:01 2026 as: nmap -Pn -sT --top-ports 100 -T4 -oN /volumes/reports/nmap_before.txt 10.2.99.10
+# Nmap 7.80 scan initiated Thu Nov 19 20:20:30 2026 as: nmap -Pn -sT --top-ports 100 -T4 -oN /volumes/reports/nmap_before.txt 10.2.99.10
 Nmap scan report for lab99_target.lab99-net (10.2.99.10)
-Host is up (0.0030s latency).
-Not shown: 99 closed ports
-PORT   STATE SERVICE
-22/tcp open  ssh
+Host is up (0.00016s latency).
+Not shown: 98 closed ports
+PORT     STATE SERVICE
+22/tcp   open  ssh
+8080/tcp open  http-proxy
 
-# Nmap done at Thu Nov 19 15:53:01 2026 -- 1 IP address (1 host up) scanned in 0.20 seconds
+# Nmap done at Thu Nov 19 20:20:30 2026 -- 1 IP address (1 host up) scanned in 0.08 seconds

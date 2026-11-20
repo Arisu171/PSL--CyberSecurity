@@ -76,7 +76,7 @@ def add_title(doc, text):
     run.font.name = "Times New Roman"
     run.font.size = Pt(16)
     run.font.bold = True
-    run.font.color.rgb = RGBColor(0, 32, 96)
+    run.font.color.rgb = RGBColor(0, 0, 0)
     return p
 
 def add_subtitle(doc, text):
@@ -86,7 +86,7 @@ def add_subtitle(doc, text):
     run.font.name = "Times New Roman"
     run.font.size = Pt(13)
     run.font.bold = True
-    run.font.color.rgb = RGBColor(31, 78, 121)
+    run.font.color.rgb = RGBColor(0, 0, 0)
     return p
 
 def add_heading_1(doc, text):
@@ -95,7 +95,7 @@ def add_heading_1(doc, text):
     run.font.name = "Times New Roman"
     run.font.size = Pt(13)
     run.font.bold = True
-    run.font.color.rgb = RGBColor(0, 32, 96)
+    run.font.color.rgb = RGBColor(0, 0, 0)
     p.paragraph_format.space_before = Pt(10)
     p.paragraph_format.space_after = Pt(4)
     return p
@@ -106,7 +106,7 @@ def add_heading_2(doc, text):
     run.font.name = "Times New Roman"
     run.font.size = Pt(12)
     run.font.bold = True
-    run.font.color.rgb = RGBColor(31, 78, 121)
+    run.font.color.rgb = RGBColor(0, 0, 0)
     p.paragraph_format.space_before = Pt(8)
     p.paragraph_format.space_after = Pt(2)
     return p

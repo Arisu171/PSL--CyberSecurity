@@ -1,27 +1,27 @@
 # Lab99 – Bao cao so sanh truoc/sau hardening
 
-- Before: `20261119T154727Z`
-- After: `20261119T155649Z`
+- Before: `20261119T201713Z`
+- After: `20261119T202124Z`
 
 | Chi so | Truoc | Sau |
 |---|---|---|
-| Diem lab99 | 5 | 12 |
+| Diem lab99 | 5 | 11 |
 | Lynis hardening index | NA | NA |
 | SSH port | 22 | 2222 |
 | PermitRootLogin | yes | no |
 | PasswordAuthentication | yes | no |
 | UFW | Status: inactive | Status: active |
 | Fail2ban sshd | inactive | active |
-| Auditd | no | yes |
+| Auditd | no | no |
 | Unattended upgrades | yes | yes |
 | rp_filter | 0 | 1 |
 | tcp_syncookies | 1 | 1 |
 | ASLR | 2 | 2 |
-| Open TCP ports | 22,37467 | 2222,37467 |
+| Open TCP ports | 22,8080,35601 | 2222,8080,35601 |
 
 ## Ket luan
 
-- Diem noi bo tang **7** (tu 5 len 12/12).
+- Diem noi bo tang **6** (tu 5 len 11/12).
 - Ky vong sau harden: SSH doi cong 2222, tat root/password login,
   UFW + Fail2ban bat, sysctl/ASLR/auditd/unattended co mat.
 - Be mat cong hep hon; danh gia bang `surface_before.txt` / `surface_after.txt`.

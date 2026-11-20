@@ -7,9 +7,9 @@
       "name": "Nguyễn Bảo Long",
       "id": "223001756",
       "class": "CNTT D2023B",
-      "course_code": "02 (x = 02)",
-      "group": "Nhóm 6 (y = 6)",
-      "network": "10.02.6.0/24 (Subnet: 10.2.6.0/24)"
+      "course_code": "02",
+      "group": "Nhóm 6",
+      "network": "10.2.6.0/24"
     },
     "default_output": "bin/docs/NguyenBaoLong_223001756_Lab04.docx"
   },
@@ -70,13 +70,37 @@
     },
     {
       "type": "table",
-      "headers": ["Thông số đo lường", "Trước khi tấn công (Baseline)", "Trong khi bị tấn công (Under Attack)"],
+      "headers": [
+        "Thông số đo lường",
+        "Trước khi tấn công (Baseline)",
+        "Trong khi bị tấn công (Under Attack)"
+      ],
       "rows": [
-        ["CPU Idle (%id)", "99.2% (Hệ thống rảnh rỗi)", "8.2% (CPU bị chiếm dụng trên 91%)"],
-        ["Soft IRQ (%si - Ngắt mềm)", "0.0% (Bình thường)", "55.1% (ksoftirqd xử lý ngắt gói tin liên tục)"],
-        ["Bộ nhớ RAM đã sử dụng", "385.2 MiB", "780.4 MiB (Buffer lưu trữ phân mảnh IP tăng cao)"],
-        ["Lưu lượng nhận (iftop)", "~0 Kbps", "~125 Mbps (Bão hòa băng thông giao diện eth0)"],
-        ["Trạng thái kết nối User", "Ping 0.2ms, Telnet port 23 tức thì", "Ping trễ >800ms / rớt gói 66%, Telnet timeout"]
+        [
+          "CPU Idle (%id)",
+          "99.2% (Hệ thống rảnh rỗi)",
+          "8.2% (CPU bị chiếm dụng trên 91%)"
+        ],
+        [
+          "Soft IRQ (%si - Ngắt mềm)",
+          "0.0% (Bình thường)",
+          "55.1% (ksoftirqd xử lý ngắt gói tin liên tục)"
+        ],
+        [
+          "Bộ nhớ RAM đã sử dụng",
+          "385.2 MiB",
+          "780.4 MiB (Buffer lưu trữ phân mảnh IP tăng cao)"
+        ],
+        [
+          "Lưu lượng nhận (iftop)",
+          "~0 Kbps",
+          "~125 Mbps (Bão hòa băng thông giao diện eth0)"
+        ],
+        [
+          "Trạng thái kết nối User",
+          "Ping 0.2ms, Telnet port 23 tức thì",
+          "Ping trễ >800ms / rớt gói 66%, Telnet timeout"
+        ]
       ]
     },
     {

@@ -6,7 +6,6 @@ set -u
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_LAB="$(cd "${SCRIPT_DIR}/.." && pwd)"
 COMPOSE_FILE="${PROJECT_LAB}/docker-compose.yml"
-LAB02_COMPOSE="/media/sf_.shared/scripts/lab02/docker-compose.yml"
 NAMED_OPTIONS_HOST="${PROJECT_LAB}/image_local_dns_server/named.conf.options"
 
 CONTAINER_USER="user-10.2.6.5"
@@ -34,6 +33,13 @@ NAME_FORMAT='{{.Names}}'
 PS_FORMAT='table {{.Names}}\t{{.Status}}\t{{.Image}}'
 LOSS_NONE="0% packet loss"
 
+# Container cua cac lab khac co the dang chiem subnet 10.2.6.0/24
+CLEANUP_LAB02=("lab02_user" "lab02_server" "lab02_attacker")
+CLEANUP_LAB04=("lab04_victim" "lab04_attacker" "lab04_user" "lab04_dns")
+CLEANUP_LAB05=("lab05_webserver" "lab05_attacker" "lab05_user")
+CLEANUP_LAB99=("lab99_target" "lab99_assessor")
+SUBNET_NETS=("net-10.2.6.0" "seed-net")
+
 names=""
 ping_dns=""
 ping_ns=""
@@ -41,9 +47,7 @@ ping_attacker=""
 dig_ns=""
 dig_www=""
 dig_direct=""
-fail=0
-
-note() { printf '\n===== %s =====\n' "$1"; }
+fail=0note() { printf '\n===== %s =====\n' "$1"; }
 pass() { echo "PASS: $1"; }
 bad() { echo "FAIL: $1"; fail=1; }
 
@@ -55,12 +59,17 @@ fi
 note "Go default route Host gay ket DNS (neu co)"
 sudo ip route del default via "$HOST_BAD_DEFAULT" 2>/dev/null || true
 
-note "Tat Lab 02 neu dang chiem subnet 10.2.6.0/24"
-if [[ -f "$LAB02_COMPOSE" ]]; then
-  sudo docker compose -f "$LAB02_COMPOSE" --project-directory "$(dirname "$LAB02_COMPOSE")" down 2>/dev/null || true
-fi
-sudo docker network rm net-10.2.6.0 2>/dev/null || true
-sudo docker network rm seed-net 2>/dev/null || true
+note "Tat cac lab khac neu dang chiem subnet 10.2.6.0/24"
+# Xoa truc tiep theo ten container — khong phu thuoc file compose cua lab khac
+sudo docker rm -f \
+  "${CLEANUP_LAB02[@]}" \
+  "${CLEANUP_LAB04[@]}" \
+  "${CLEANUP_LAB05[@]}" \
+  "${CLEANUP_LAB99[@]}" \
+  2>/dev/null || true
+for _net in "${SUBNET_NETS[@]}"; do
+  sudo docker network rm "$_net" 2>/dev/null || true
+done
 
 note "Build Local DNS (neu can) va khoi dong Lab 03 tu du an"
 sudo docker compose -f "$COMPOSE_FILE" --project-directory "$PROJECT_LAB" build local-server

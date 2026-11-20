@@ -1,4 +1,5 @@
-method=Lab02_ARP_MITM_StaticARP
-scripts=00_init,01_scenario1,02_scenario2,03_scenario3,04_fix_server
+method=Lab02_ARP_Spoofing_RPFilter_StaticARP
+target=10.2.99.10
+assessor=10.2.99.20
 log=/media/sf_.shared/scripts/lab99/volumes/reports/lab02_verify.log
 result=PASS

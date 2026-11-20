@@ -1,0 +1,21 @@
+==========================================================
+ LAB99 -> KIEM CHUNG GIAM SAT TOAN VEN AUDITD
+ Thoi gian thuc hien: 2026-11-19T20:31:46Z
+ Target: 10.2.99.10
+==========================================================
+
+[*] Buoc 1: Kiem tra va nap quy tac giam sat tep tin nhay cam (Audit Rules)
+  - Danh sach quy tac Auditd hien tai tren Target:
+-w /etc/passwd -p wa -k identity_tampering
+-w /etc/ssh/sshd_config -p wa -k ssh_config_tampering
+
+[*] Buoc 2: Gia lap hanh vi xam pham / can thiep trai phep vao tep tin he thong
+  - Thuc hien thao tac cham (touch) sua doi thuoc tinh tren /etc/passwd...
+[*] Buoc 3: Truy van nhat ky giam sat so (Audit Forensic Log Query) qua ausearch
+  - Ban ghi kiem toan trich xuat:
+type=CONFIG_CHANGE msg=audit(1795120307.497:261): auid=4294967295 ses=4294967295 subj=unconfined op=add_rule key="identity_tampering" list=4 res=1AUID="unset"
+type=SYSCALL msg=audit(1795120307.913:281): arch=c000003e syscall=257 success=yes exit=3 a0=ffffff9c a1=7fff9686af5a a2=941 a3=1b6 items=15 ppid=53537 pid=53875 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm="touch" exe="/usr/bin/touch" subj=unconfined key="identity_tampering"ARCH=x86_64 SYSCALL=openat AUID="unset" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root"
+  [+] GIAM SAT TOAN VEN THANH CONG: Kernel Auditd da ghi lai chi tiet su kien xam pham!
+      Bao gom: tien trinh thuc hien, UID nguoi dung, loai syscall va timestamp.
+
+AUDITD_VERIFY=PASS

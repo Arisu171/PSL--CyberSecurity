@@ -1,202 +1,22 @@
-LAB99 -> LAB02 VERIFY  2026-11-14T11:06:09Z
-Su dung script san co: 00_init .. 04_fix_server
+==========================================================
+ LAB99 -> KIEM CHUNG PHONG THU LAYER 2/3 (LAB 02)
+ Thoi gian thuc hien: 2026-11-19T20:25:07Z
+ Target: 10.2.99.10 | Assessor: 10.2.99.20
+==========================================================
 
+[*] Buoc 1: Thu thap thong so MAC hien tai cua Target va Assessor
+  - TARGET_MAC:   0a:f4:7e:ae:ca:50
+  - ASSESSOR_MAC: 76:f5:85:43:41:f0
 
-######## 00_init ########
-
-===== Tat Lab 03 neu dang chiem subnet 10.2.6.0/24 =====
-
-===== Khoi dong container tu du an =====
-time="2026-11-14T11:06:09Z" level=warning msg="/media/sf_.shared/scripts/lab02/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion"
- Network net-10.2.6.0  Creating
- Network net-10.2.6.0  Created
- Container lab02_attacker  Creating
- Container lab02_user  Creating
- Container lab02_server  Creating
- Container lab02_server  Created
- Container lab02_user  Created
- Container lab02_attacker  Created
- Container lab02_attacker  Starting
- Container lab02_user  Starting
- Container lab02_server  Starting
- Container lab02_server  Started
- Container lab02_attacker  Started
- Container lab02_user  Started
-
-===== Don tien trinh cu va ban ghi ARP tinh =====
-No ARP entry for 10.2.6.20
-No ARP entry for 10.2.6.10
-
-===== Danh sach container =====
-NAMES            STATUS         IMAGE
-lab02_user       Up 5 seconds   lab02_image
-lab02_attacker   Up 5 seconds   lab02_image
-lab02_server     Up 5 seconds   lab02_image
-PASS: lab02_user dang chay
-PASS: lab02_server dang chay
-PASS: lab02_attacker dang chay
-
-===== IP va MAC hien tai =====
-eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 10.2.6.10  netmask 255.255.255.0  broadcast 10.2.6.255
-        ether 8a:e3:03:89:eb:3b  txqueuelen 0  (Ethernet)
-        RX packets 14  bytes 1100 (1.1 KB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 3  bytes 126 (126.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 10.2.6.20  netmask 255.255.255.0  broadcast 10.2.6.255
-        ether 72:3e:92:eb:e5:8a  txqueuelen 0  (Ethernet)
-        RX packets 17  bytes 1294 (1.2 KB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 3  bytes 126 (126.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
-        inet 10.2.6.51  netmask 255.255.255.0  broadcast 10.2.6.255
-        ether 2e:03:ca:07:bd:43  txqueuelen 0  (Ethernet)
-        RX packets 15  bytes 1142 (1.1 KB)
-        RX errors 0  dropped 0  overruns 0  frame 0
-        TX packets 3  bytes 126 (126.0 B)
-        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
-USER_MAC=8a:e3:03:89:eb:3b IP=10.2.6.10
-SERVER_MAC=72:3e:92:eb:e5:8a IP=10.2.6.20
-ATTACKER_MAC=2e:03:ca:07:bd:43 IP=10.2.6.51
-
-===== Ping va ARP ban dau =====
-PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.
-64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.116 ms
-64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.056 ms
-
---- 10.2.6.20 ping statistics ---
-2 packets transmitted, 2 received, 0% packet loss, time 1031ms
-rtt min/avg/max/mdev = 0.056/0.086/0.116/0.030 ms
-PASS: User ping toi Server
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.20                ether   72:3e:92:eb:e5:8a   C                     eth0
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.10                ether   8a:e3:03:89:eb:3b   C                     eth0
-PASS: User anh xa 10.2.6.20 dung MAC Server
-PASS: Server anh xa 10.2.6.10 dung MAC User
-
-KET QUA KHOI TAO: PASS
-STEP_OK 00_init
-
-######## 01_scenario1 ########
-
-===== Lam sach moi truong =====
-SERVER_MAC=72:3e:92:eb:e5:8a
-ATTACKER_MAC=2e:03:ca:07:bd:43
-
-===== Bat tcpdump va gui ARP Reply tu file du an =====
-net.ipv4.ip_forward = 0
-PASS: tcpdump dang ghi /tmp/scenario1.pcap
-
-===== ARP cache cua User sau tan cong =====
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.51                ether   2e:03:ca:07:bd:43   C                     eth0
-10.2.6.20                ether   2e:03:ca:07:bd:43   C                     eth0
-PASS: 10.2.6.20 da tro toi MAC Attacker
-
-===== Ping khi bi dau doc =====
-PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.
-
---- 10.2.6.20 ping statistics ---
-3 packets transmitted, 0 received, 100% packet loss, time 2084ms
-PASS: 100% packet loss
-
-===== Pcap ARP Reply gia =====
-11:06:19.405078 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:20.445029 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:21.193283 2e:03:ca:07:bd:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.10 tell 10.2.6.51, length 28
-11:06:21.193305 8a:e3:03:89:eb:3b > 2e:03:ca:07:bd:43, ethertype ARP (0x0806), length 42: Reply 10.2.6.10 is-at 8a:e3:03:89:eb:3b, length 28
-11:06:21.197772 2e:03:ca:07:bd:43 > 8a:e3:03:89:eb:3b, ethertype ARP (0x0806), length 42: Reply 10.2.6.20 is-at 2e:03:ca:07:bd:43, length 28
-11:06:21.467795 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:21.787849 72:3e:92:eb:e5:8a > 8a:e3:03:89:eb:3b, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.10 tell 10.2.6.20, length 28
-11:06:21.787869 8a:e3:03:89:eb:3b > 72:3e:92:eb:e5:8a, ethertype ARP (0x0806), length 42: Reply 10.2.6.10 is-at 8a:e3:03:89:eb:3b, length 28
-11:06:23.205652 2e:03:ca:07:bd:43 > 8a:e3:03:89:eb:3b, ethertype ARP (0x0806), length 42: Reply 10.2.6.20 is-at 2e:03:ca:07:bd:43, length 28
-11:06:25.213700 2e:03:ca:07:bd:43 > 8a:e3:03:89:eb:3b, ethertype ARP (0x0806), length 42: Reply 10.2.6.20 is-at 2e:03:ca:07:bd:43, length 28
-PASS: pcap co ARP Reply gia mao
-
-KET QUA KICH BAN 1: PASS
-STEP_OK 01_scenario1
-
-######## 02_scenario2 ########
-
-===== Khoi phuc ARP dong roi bat tcpdump =====
-SERVER_MAC=72:3e:92:eb:e5:8a
-ATTACKER_MAC=2e:03:ca:07:bd:43
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.20                ether   72:3e:92:eb:e5:8a   C                     eth0
-PASS: ARP da tro lai MAC that cua Server
-
-===== ARP cache sau ARP Request gia =====
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.20                ether   2e:03:ca:07:bd:43   C                     eth0
-PASS: 10.2.6.20 da tro toi MAC Attacker
-
-===== Pcap ARP Request gia =====
-11:06:33.940686 2e:03:ca:07:bd:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.10 tell 10.2.6.20, length 28
-11:06:33.940720 8a:e3:03:89:eb:3b > 2e:03:ca:07:bd:43, ethertype ARP (0x0806), length 42: Reply 10.2.6.10 is-at 8a:e3:03:89:eb:3b, length 28
-11:06:34.765525 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:35.803799 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:35.948508 2e:03:ca:07:bd:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.10 tell 10.2.6.20, length 28
-11:06:35.948528 8a:e3:03:89:eb:3b > 2e:03:ca:07:bd:43, ethertype ARP (0x0806), length 42: Reply 10.2.6.10 is-at 8a:e3:03:89:eb:3b, length 28
-11:06:36.827866 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-11:06:37.956435 2e:03:ca:07:bd:43 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.10 tell 10.2.6.20, length 28
-11:06:37.956452 8a:e3:03:89:eb:3b > 2e:03:ca:07:bd:43, ethertype ARP (0x0806), length 42: Reply 10.2.6.10 is-at 8a:e3:03:89:eb:3b, length 28
-11:06:39.259011 46:a1:be:cd:c4:37 > ff:ff:ff:ff:ff:ff, ethertype ARP (0x0806), length 42: Request who-has 10.2.6.53 tell 10.2.6.1, length 28
-PASS: pcap co ARP Request gia mao
-
-KET QUA KICH BAN 2: PASS
-STEP_OK 02_scenario2
-
-######## 03_scenario3 ########
-
-===== Khoi phuc ARP hai chieu =====
-
-===== Truyen tin binh thuong =====
-TRUOC TAN CONG: [Hello Server from Nguyen Bao Long 223001756]
-PASS: thong diep goc nguyen ven
-
-===== MITM thay chu va so bang X =====
-SAU MITM: [XXXXX XXXXXX XXXX XXXXXX XXX XXXX XXXXXXXXX]
-PASS: thong diep da bi thay bang X
-
-KET QUA KICH BAN 3: PASS
-STEP_OK 03_scenario3
-
-######## 04_fix_server ########
-
-===== Don tan cong cu va lay MAC Server hien tai =====
-Gan ARP tinh 10.2.6.20 -> 72:3e:92:eb:e5:8a
-
-===== Kiem tra co CM =====
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.20                ether   72:3e:92:eb:e5:8a   CM                    eth0
-PASS: ARP tinh CM dung MAC Server
-
-===== Thu lai scenario1 tu file du an =====
-Address                  HWtype  HWaddress           Flags Mask            Iface
-10.2.6.51                ether   2e:03:ca:07:bd:43   C                     eth0
-10.2.6.20                ether   72:3e:92:eb:e5:8a   CM                    eth0
-PASS: MAC Server giu nguyen sau tan cong
-
-===== Ping sau khi da gan ARP tinh =====
-PING 10.2.6.20 (10.2.6.20) 56(84) bytes of data.
-64 bytes from 10.2.6.20: icmp_seq=1 ttl=64 time=0.060 ms
-64 bytes from 10.2.6.20: icmp_seq=2 ttl=64 time=0.067 ms
-64 bytes from 10.2.6.20: icmp_seq=3 ttl=64 time=0.054 ms
-
---- 10.2.6.20 ping statistics ---
-3 packets transmitted, 3 received, 0% packet loss, time 2074ms
-rtt min/avg/max/mdev = 0.054/0.060/0.067/0.005 ms
-PASS: 0% packet loss
-
-Ban ghi tinh van duoc giu. Xoa bang lenh: sudo docker exec lab02_user arp -d 10.2.6.20
-KET QUA FIX SERVER: PASS
-STEP_OK 04_fix_server
+[*] Buoc 2: Assessor thu nghiem phat tan goi tin ARP Reply gia mao toi Target
+[*] Buoc 3: Kiem tra cau hinh phong thu tren Target
+  - net.ipv4.conf.all.rp_filter: 1
+  [+] Reverse Path Filtering dang bat: ngan chan goi tin gia mao IP nguon.
+  - net.ipv4.conf.all.arp_ignore:   1
+  - net.ipv4.conf.all.arp_announce: 2
+  - Bang ARP hien tai tren Target:
+10.2.99.20 dev eth0 lladdr 76:f5:85:43:41:f0 PERMANENT
+10.2.99.254 dev eth0 lladdr 92:ba:9f:1e:36:5a STALE
+  [+] Anh xa ARP cua Assessor duoc bao ve, khong bi dau doc boi fake reply.
 
 LAB02_VERIFY=PASS

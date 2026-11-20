@@ -266,15 +266,22 @@ bash .lab/03_test_defense.sh
 bash .lab/99_down.sh
 
 # ==========================================
-# 6. CHẠY BÀI TẬP LỚN LAB 99 (MULTI-LAYER DEFENSE)
+# 6. CHẠY BÀI TẬP LỚN LAB 99 (MULTI-LAYER DEFENSE & ATTACK VERIFICATION)
 # ==========================================
 cd /media/sf_.shared/scripts/lab99
-bash .lab/08_apply_lab02.sh
-bash .lab/09_apply_lab03.sh
-bash .lab/11_apply_lab04.sh
-bash .lab/12_apply_lab05.sh
-bash .lab/10_summary_project.sh
-bash .lab/99_down.sh
+bash .lab/00_init.sh                  # 1. Khoi tao Target (10.2.99.10) & Assessor (10.2.99.20)
+bash .lab/01_baseline_audit.sh         # 2. Kiem toan chi so Lynis truoc gia co
+bash .lab/02_assess_surface.sh before  # 3. Tham do be mat bang Nmap truoc gia co (Lab 01)
+bash .lab/03_harden.sh                 # 4. Trien khai gia co he thong da tang
+bash .lab/04_verify_harden.sh          # 5. Xac minh cau hinh gia co tren Target
+bash .lab/05_reassess.sh               # 6. Tai kiem toan chi so Lynis sau gia co
+bash .lab/06_compare_report.sh         # 7. So sanh dinh luong Before vs After
+bash .lab/08_apply_lab02.sh            # 8. Assessor tan cong ARP Spoofing -> Kiem chung phong thu L2/L3 (Lab 02)
+bash .lab/09_apply_lab03.sh            # 9. Assessor tham dinh DNS -> Kiem chung Source Port Randomization (Lab 03)
+bash .lab/11_apply_lab04.sh            # 10. Assessor tan cong DoS SYN Flood -> Kiem chung SYN Cookies (Lab 04)
+bash .lab/12_apply_lab05.sh            # 11. Assessor tan cong SQLi -> Kiem chung Prepared Statements (Lab 05)
+bash .lab/10_summary_project.sh        # 12. Tong hop bao cao toan dien vao project_summary.md
+bash .lab/99_down.sh                   # 13. Dong moi truong Lab 99
 ```
 
 ---
